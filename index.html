@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>スペルれんしゅう</title>
+<style>
+  :root {
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    --bg: #fdf6e3;
+    --card: #ffffff;
+    --text: #3d2f1e;
+    --muted: #8a7a63;
+    --accent: #f5a623;
+    --accent-dark: #d98c0f;
+    --accent-text: #ffffff;
+    --ok: #2e9e5b;
+    --ok-bg: #e3f6eb;
+    --ng: #d9534f;
+    --ng-bg: #fdeaea;
+    --border: #eadfc8;
+    --input-bg: #fffdf7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #1e1a14;
+      --card: #2a251c;
+      --text: #f3ead9;
+      --muted: #a89a82;
+      --accent: #f5a623;
+      --accent-dark: #ffbe4d;
+      --accent-text: #2a1d05;
+      --ok: #5ed492;
+      --ok-bg: #1f3a2b;
+      --ng: #ff8a85;
+      --ng-bg: #43211f;
+      --border: #453c2d;
+      --input-bg: #221d15;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #1e1a14;
+    --card: #2a251c;
+    --text: #f3ead9;
+    --muted: #a89a82;
+    --accent: #f5a623;
+    --accent-dark: #ffbe4d;
+    --accent-text: #2a1d05;
+    --ok: #5ed492;
+    --ok-bg: #1f3a2b;
+    --ng: #ff8a85;
+    --ng-bg: #43211f;
+    --border: #453c2d;
+    --input-bg: #221d15;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Hiragino Maru Gothic ProN", "Hiragino Sans", "BIZ UDGothic", "Yu Gothic", system-ui, sans-serif;
+    line-height: 1.6;
+    min-height: 100%;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 20px 16px 48px; }
+  h1 { font-size: 1.5rem; text-align: center; margin: 8px 0 2px; }
+  .sub { text-align: center; color: var(--muted); font-size: .85rem; margin: 0 0 18px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 22px 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.05);
+  }
+  button {
+    font-family: inherit;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    font-weight: 700;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-big {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    font-size: 1.15rem;
+    background: var(--accent);
+    color: var(--accent-text);
+    margin-top: 10px;
+  }
+  .btn-big:active { background: var(--accent-dark); }
+  .btn-sub {
+    display: block;
+    width: 100%;
+    padding: 13px;
+    font-size: 1rem;
+    background: transparent;
+    color: var(--text);
+    border: 2px solid var(--border);
+    margin-top: 10px;
+  }
+  .btn-speak {
+    display: block;
+    margin: 0 auto 16px;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    font-size: 3.2rem;
+    background: var(--accent);
+    color: var(--accent-text);
+    box-shadow: 0 4px 14px rgba(245,166,35,.45);
+  }
+  .btn-speak:active { transform: scale(.96); }
+  .btn-speak span { display: block; font-size: .8rem; margin-top: 2px; }
+  .progress { text-align: center; color: var(--muted); font-weight: 700; margin-bottom: 12px; }
+  .bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 18px; }
+  .bar i { display: block; height: 100%; background: var(--accent); border-radius: 4px; transition: width .3s; }
+  input[type="text"] {
+    width: 100%;
+    padding: 14px;
+    font-size: 1.6rem;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    background: var(--input-bg);
+    color: var(--text);
+    font-family: inherit;
+  }
+  input[type="text"]:focus { outline: 3px solid var(--accent); border-color: var(--accent); }
+  .feedback { text-align: center; padding: 10px 0 4px; }
+  .feedback .mark { font-size: 3rem; line-height: 1.2; }
+  .feedback .word {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: .12em;
+    margin: 6px 0 2px;
+    word-break: break-all;
+  }
+  .feedback .meaning { font-size: 1.2rem; color: var(--text); margin-bottom: 6px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.ng { color: var(--ng); }
+  .feedback .yours { font-size: 1rem; color: var(--muted); }
+  .result-score { text-align: center; font-size: 2.4rem; font-weight: 800; margin: 6px 0; }
+  .miss-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 14px 0; }
+  .miss-list b {
+    background: var(--ng-bg);
+    color: var(--ng);
+    border-radius: 10px;
+    padding: 6px 12px;
+    font-size: 1rem;
+    letter-spacing: .08em;
+  }
+  textarea {
+    width: 100%;
+    min-height: 300px;
+    font-size: 1rem;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    background: var(--input-bg);
+    color: var(--text);
+    padding: 12px;
+  }
+  .row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 14px; color: var(--muted); font-size: .95rem; }
+  .row input { width: 22px; height: 22px; accent-color: var(--accent); }
+  .row select {
+    font-family: inherit;
+    font-size: .95rem;
+    padding: 8px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: var(--input-bg);
+    color: var(--text);
+    max-width: 230px;
+  }
+  .summary { text-align: center; font-size: 1.05rem; margin: 4px 0 0; }
+  .note { color: var(--muted); font-size: .85rem; text-align: center; margin-top: 10px; }
+  .legend { color: var(--muted); font-size: .85rem; text-align: center; margin: 0 0 12px; }
+  .score-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .score-row:last-child { border-bottom: none; }
+  .score-row .lv { font-size: 1.2rem; }
+  .score-row .w { flex: 1; min-width: 0; }
+  .score-row .w b { font-size: 1.05rem; letter-spacing: .06em; }
+  .score-row .w small { display: block; color: var(--muted); font-size: .85rem; }
+  .score-row .cnt { color: var(--muted); font-size: .85rem; white-space: nowrap; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🐝 スペルれんしゅう</h1>
+  <p class="sub">きいて、おおもじで かいてみよう</p>
+
+  <!-- ホーム -->
+  <div id="screen-home" class="card">
+    <p style="text-align:center; font-size:1.05rem; margin:0;">たんご：<b id="home-count"></b>こ</p>
+    <p class="summary" id="home-summary"></p>
+    <button class="btn-big" id="btn-start">▶ テストを はじめる</button>
+    <button class="btn-sub hidden" id="btn-weak"></button>
+    <button class="btn-sub" id="btn-score">📊 せいせきを みる</button>
+    <label class="row"><input type="checkbox" id="chk-shuffle"> じゅんばんを シャッフルする</label>
+    <label class="row"><input type="checkbox" id="chk-sound"> 🔔 ⭕❌の こえを だす（Good job! など）</label>
+    <label class="row">🗣️ こえ
+      <select id="sel-voice"><option value="">じどうで えらぶ</option></select>
+    </label>
+    <button class="btn-sub" id="btn-edit">📝 たんごリストを かえる</button>
+    <p class="note">🔊ボタンで 3かい よみあげます（ほんばんと おなじ）</p>
+  </div>
+
+  <!-- クイズ -->
+  <div id="screen-quiz" class="hidden">
+    <div class="card">
+      <div class="progress" id="quiz-progress"></div>
+      <div class="bar"><i id="quiz-bar" style="width:0%"></i></div>
+      <div id="quiz-ask">
+        <button class="btn-speak" id="btn-speak">🔊<span>きく</span></button>
+        <input type="text" id="quiz-input" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done" placeholder="ここに かく">
+        <button class="btn-big" id="btn-check">けってい</button>
+      </div>
+      <div id="quiz-fb" class="hidden">
+        <div class="feedback" id="fb-box">
+          <div class="mark" id="fb-mark"></div>
+          <div id="fb-label"></div>
+          <div class="word" id="fb-word"></div>
+          <div class="meaning" id="fb-mean"></div>
+          <div class="yours" id="fb-yours"></div>
+        </div>
+        <button class="btn-big" id="btn-next">つぎへ ▶</button>
+      </div>
+    </div>
+    <button class="btn-sub" id="btn-quit">やめて ホームに もどる</button>
+  </div>
+
+  <!-- けっか -->
+  <div id="screen-result" class="hidden">
+    <div class="card">
+      <p style="text-align:center; font-size:1.2rem; margin:0;">けっか</p>
+      <div class="result-score" id="result-score"></div>
+      <div id="result-msg" style="text-align:center; font-size:1.3rem;"></div>
+      <div class="miss-list" id="result-miss"></div>
+      <button class="btn-big hidden" id="btn-retry-miss">❌ まちがえたのだけ もういちど</button>
+      <button class="btn-sub" id="btn-home1">ホームに もどる</button>
+    </div>
+  </div>
+
+  <!-- せいせき -->
+  <div id="screen-score" class="hidden">
+    <div class="card">
+      <p style="text-align:center; font-size:1.2rem; margin:0 0 6px;">📊 せいせき</p>
+      <p class="legend">🟢 2かい れんぞく せいかい　🟡 あと 1かい！<br>🔴 このまえ まちがえた　⚪ まだ やってない</p>
+      <div id="score-list"></div>
+      <button class="btn-big hidden" id="btn-weak2"></button>
+      <button class="btn-sub" id="btn-stats-reset">きろくを ぜんぶ けす</button>
+      <button class="btn-sub" id="btn-home3">ホームに もどる</button>
+    </div>
+  </div>
+
+  <!-- へんしゅう -->
+  <div id="screen-edit" class="hidden">
+    <div class="card">
+      <p style="margin-top:0; font-size:.95rem;">1ぎょうに 1たんご。「たんご = いみ」の かたちで かいてね（いみは なくても OK）</p>
+      <textarea id="edit-area"></textarea>
+      <button class="btn-big" id="btn-save">ほぞんする</button>
+      <button class="btn-sub" id="btn-reset">スペリングビーの 50こに もどす</button>
+      <button class="btn-sub" id="btn-home2">ほぞんしないで もどる</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var DEFAULT_LIST = [
+    {w:"forest", m:"もり 🌲"},
+    {w:"envelope", m:"ふうとう ✉️"},
+    {w:"kettle", m:"やかん 🫖"},
+    {w:"lettuce", m:"レタス 🥬"},
+    {w:"sausage", m:"ソーセージ 🌭"},
+    {w:"zipper", m:"チャック 🤐"},
+    {w:"switch", m:"スイッチ 🔘"},
+    {w:"internet", m:"インターネット 🌐"},
+    {w:"lasso", m:"なげなわ 🤠"},
+    {w:"knight", m:"きし ⚔️"},
+    {w:"giant", m:"きょじん 🧌"},
+    {w:"sibling", m:"きょうだい 👧👦"},
+    {w:"passenger", m:"のりものの おきゃくさん 🚌"},
+    {w:"hobby", m:"しゅみ ⚽"},
+    {w:"dawn", m:"よあけ 🌅"},
+    {w:"yawn", m:"あくび 🥱"},
+    {w:"knock", m:"ノックする 🚪"},
+    {w:"scratch", m:"ひっかく 🐈"},
+    {w:"blush", m:"かおが あかく なる 😳"},
+    {w:"travel", m:"りょこうする ✈️"},
+    {w:"borrow", m:"かりる 📚"},
+    {w:"attach", m:"くっつける 📎"},
+    {w:"remove", m:"とりのぞく 🚮"},
+    {w:"rescue", m:"たすける 🚁"},
+    {w:"vanish", m:"きえる 🫥"},
+    {w:"celebrate", m:"おいわいする 🎉"},
+    {w:"perform", m:"はっぴょうする 🎭"},
+    {w:"inform", m:"しらせる 📣"},
+    {w:"interact", m:"やりとりする 💬"},
+    {w:"promise", m:"やくそく 🤝"},
+    {w:"behave", m:"いいこに する 🙆"},
+    {w:"thankful", m:"ありがとうの きもち 🙏"},
+    {w:"honest", m:"しょうじき 😇"},
+    {w:"lively", m:"げんき いっぱい 🤸"},
+    {w:"jealous", m:"やきもち 😒"},
+    {w:"timid", m:"こわがり 🐭"},
+    {w:"terrified", m:"とても こわがる 😱"},
+    {w:"upset", m:"かなしく させる 😢"},
+    {w:"serious", m:"まじめ 🧐"},
+    {w:"wicked", m:"わるい 😈"},
+    {w:"victorious", m:"かった 🏆"},
+    {w:"injury", m:"けが 🩹"},
+    {w:"blind", m:"めが みえない 🦯"},
+    {w:"equal", m:"おなじ ⚖️"},
+    {w:"daily", m:"まいにちの 📅"},
+    {w:"modern", m:"いまふうの 🏙️"},
+    {w:"narrow", m:"せまい 🤏"},
+    {w:"random", m:"ランダム 🎲"},
+    {w:"ability", m:"できる ちから 💪"},
+    {w:"freedom", m:"じゆう 🕊️"}
+  ];
+  var GAP_MS = 2500; /* 3回読みの間隔 */
+
+  /* ---- ⭕❌のこえ（英語でほめる・はげます） ---- */
+  var soundOn = true;
+  try { soundOn = localStorage.getItem("spell_sound") !== "0"; } catch (e) {}
+  var OK_PHRASES = ["Good job!", "Great job!", "Well done!", "Awesome!"];
+  var NG_PHRASES = ["Oops! Nice try!", "Oops! Almost!"];
+  function playSound(ok){
+    if (!soundOn || !window.speechSynthesis) return;
+    try {
+      window.speechSynthesis.cancel();
+      speakSession++; /* 3回読みの続きを止める */
+      var list = ok ? OK_PHRASES : NG_PHRASES;
+      var u = new SpeechSynthesisUtterance(list[Math.floor(Math.random() * list.length)]);
+      var v = resolveVoice();
+      if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = "en-US"; }
+      u.rate = 0.95;
+      u.pitch = ok ? 1.15 : 1.0;
+      window.speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+
+  function norm(s){ return String(s).replace(/\s+/g, " ").trim().toUpperCase(); }
+  function defaultMeaning(w){
+    var k = norm(w);
+    for (var i = 0; i < DEFAULT_LIST.length; i++) {
+      if (norm(DEFAULT_LIST[i].w) === k) return DEFAULT_LIST[i].m;
+    }
+    return "";
+  }
+
+  /* ---- 単語リスト読み込み（旧形式からの引き継ぎつき） ---- */
+  var words = DEFAULT_LIST.slice();
+  var shuffleOn = false, savedVoiceURI = "";
+  try {
+    var v2 = localStorage.getItem("spell_words_v2");
+    if (v2) {
+      var p2 = JSON.parse(v2);
+      if (Array.isArray(p2) && p2.length) {
+        words = p2.filter(function(x){ return x && x.w; }).map(function(x){ return {w: String(x.w), m: String(x.m || "")}; });
+      }
+    } else {
+      var v1 = localStorage.getItem("spell_words");
+      if (v1) {
+        var p1 = JSON.parse(v1);
+        if (Array.isArray(p1) && p1.length) {
+          words = p1.map(function(w){ return {w: String(w), m: defaultMeaning(w)}; });
+        }
+      }
+    }
+    if (!words.length) words = DEFAULT_LIST.slice();
+    shuffleOn = localStorage.getItem("spell_shuffle") === "1";
+    savedVoiceURI = localStorage.getItem("spell_voice") || "";
+  } catch (e) {}
+
+  /* ---- せいせき（単語ごとの記録） ---- */
+  var stats = {};
+  try {
+    var s = JSON.parse(localStorage.getItem("spell_stats") || "{}");
+    if (s && typeof s === "object") stats = s;
+  } catch (e) {}
+  function saveStats(){ try { localStorage.setItem("spell_stats", JSON.stringify(stats)); } catch (e) {} }
+  function recOf(w){
+    var k = norm(w);
+    if (!stats[k]) stats[k] = {ok: 0, ng: 0, st: 0};
+    return stats[k];
+  }
+  function levelOf(w){
+    var r = stats[norm(w)];
+    if (!r || (r.ok + r.ng) === 0) return "⚪";
+    if (r.st === 0) return "🔴";
+    if (r.st === 1) return "🟡";
+    return "🟢";
+  }
+  function weakWords(){
+    return words.filter(function(x){
+      var lv = levelOf(x.w);
+      return lv === "🔴" || lv === "🟡";
+    });
+  }
+
+  var queue = [], pos = 0, misses = [];
+  var heard = false;
+
+  var $ = function(id){ return document.getElementById(id); };
+  var screens = ["home","quiz","result","edit","score"];
+  function show(name){
+    screens.forEach(function(s){ $("screen-"+s).classList.toggle("hidden", s !== name); });
+    if (name === "home") refreshHome();
+    if (name === "score") refreshScore();
+  }
+
+  /* ---- 読み上げ ---- */
+  function englishVoices(){
+    var vs = [];
+    try { vs = window.speechSynthesis.getVoices() || []; } catch (e) {}
+    return vs.filter(function(v){ return /^en[-_]?/i.test(v.lang || ""); });
+  }
+  function voiceScore(v){
+    var s = 0;
+    if (/^en-?US/i.test(v.lang)) s += 4;
+    else if (/^en-?GB/i.test(v.lang)) s += 3;
+    else s += 1;
+    if (/samantha|alex|ava|allison|aaron|nicky|karen|daniel|google (us|uk) english/i.test(v.name)) s += 4;
+    if (/enhanced|premium|拡張/i.test(v.name)) s += 2;
+    if (/compact/i.test(v.name)) s -= 2;
+    return s;
+  }
+  function resolveVoice(){
+    var en = englishVoices();
+    if (!en.length) return null;
+    if (savedVoiceURI) {
+      for (var i = 0; i < en.length; i++) {
+        if (en[i].voiceURI === savedVoiceURI) return en[i];
+      }
+    }
+    en.sort(function(a, b){ return voiceScore(b) - voiceScore(a); });
+    return en[0];
+  }
+  function fillVoiceSelect(){
+    var sel = $("sel-voice");
+    var cur = savedVoiceURI;
+    while (sel.options.length > 1) sel.remove(1);
+    englishVoices().forEach(function(v){
+      var o = document.createElement("option");
+      o.value = v.voiceURI;
+      o.textContent = v.name + " (" + v.lang + ")";
+      sel.appendChild(o);
+    });
+    sel.value = cur;
+    if (sel.value !== cur) sel.value = "";
+  }
+  if (window.speechSynthesis) {
+    fillVoiceSelect();
+    window.speechSynthesis.onvoiceschanged = fillVoiceSelect;
+  }
+  $("sel-voice").addEventListener("change", function(){
+    savedVoiceURI = this.value;
+    try { localStorage.setItem("spell_voice", savedVoiceURI); } catch (e) {}
+    speakTimes("hello", 1);
+  });
+  var speakSession = 0;
+  function speakTimes(word, times){
+    if (!window.speechSynthesis) { alert("この ブラウザは よみあげに たいおうして いません"); return; }
+    try { window.speechSynthesis.cancel(); } catch (e) {}
+    var mySession = ++speakSession;
+    var i = 0;
+    var v = resolveVoice();
+    function one(){
+      if (mySession !== speakSession) return;
+      var u = new SpeechSynthesisUtterance(word);
+      if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = "en-US"; }
+      u.rate = 0.75;
+      u.onend = function(){
+        i++;
+        if (i < times) setTimeout(one, GAP_MS);
+      };
+      try { window.speechSynthesis.speak(u); } catch (e) {}
+    }
+    one();
+  }
+
+  /* ---- ホーム ---- */
+  function summaryText(){
+    var c = {"🟢":0, "🟡":0, "🔴":0, "⚪":0};
+    words.forEach(function(x){ c[levelOf(x.w)]++; });
+    return "🟢 " + c["🟢"] + "　🟡 " + c["🟡"] + "　🔴 " + c["🔴"] + "　⚪ " + c["⚪"];
+  }
+  function refreshHome(){
+    $("home-count").textContent = words.length;
+    $("home-summary").textContent = summaryText();
+    $("chk-shuffle").checked = shuffleOn;
+    $("chk-sound").checked = soundOn;
+    var wk = weakWords();
+    var b = $("btn-weak");
+    if (wk.length) {
+      b.textContent = "💪 にがてな " + wk.length + "こだけ れんしゅう（🔴🟡）";
+      b.classList.remove("hidden");
+    } else {
+      b.classList.add("hidden");
+    }
+  }
+  $("chk-shuffle").addEventListener("change", function(){
+    shuffleOn = this.checked;
+    try { localStorage.setItem("spell_shuffle", shuffleOn ? "1" : "0"); } catch (e) {}
+  });
+  $("chk-sound").addEventListener("change", function(){
+    soundOn = this.checked;
+    try { localStorage.setItem("spell_sound", soundOn ? "1" : "0"); } catch (e) {}
+    if (soundOn) playSound(true);
+  });
+  $("btn-start").addEventListener("click", function(){ startQuiz(words.slice()); });
+  $("btn-weak").addEventListener("click", function(){ startQuiz(weakWords()); });
+  $("btn-score").addEventListener("click", function(){ show("score"); });
+  $("btn-edit").addEventListener("click", function(){
+    $("edit-area").value = words.map(function(x){ return x.m ? x.w + " = " + x.m : x.w; }).join("\n");
+    show("edit");
+  });
+
+  /* ---- クイズ ---- */
+  function startQuiz(list){
+    if (!list.length) return;
+    queue = list.slice();
+    if (shuffleOn) {
+      for (var i = queue.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = queue[i]; queue[i] = queue[j]; queue[j] = t;
+      }
+    }
+    pos = 0; misses = [];
+    show("quiz");
+    ask();
+  }
+  function ask(){
+    $("quiz-ask").classList.remove("hidden");
+    $("quiz-fb").classList.add("hidden");
+    $("quiz-progress").textContent = (pos + 1) + " / " + queue.length;
+    $("quiz-bar").style.width = (pos / queue.length * 100) + "%";
+    $("quiz-input").value = "";
+    heard = false;
+    setSpeakLabel();
+  }
+  function setSpeakLabel(){
+    $("btn-speak").innerHTML = heard ? "\uD83D\uDD0A<span>もういちど きく</span>" : "\uD83D\uDD0A<span>きく（3かい）</span>";
+  }
+  function check(){
+    var cur = queue[pos];
+    var ans = norm($("quiz-input").value);
+    if (!ans) { speakTimes(cur.w, 1); return; }
+    var correct = norm(cur.w);
+    var ok = ans === correct;
+    var r = recOf(cur.w);
+    if (ok) { r.ok++; r.st++; } else { r.ng++; r.st = 0; misses.push(cur); }
+    saveStats();
+    try { window.speechSynthesis.cancel(); } catch (e) {}
+    playSound(ok);
+    $("quiz-ask").classList.add("hidden");
+    $("quiz-fb").classList.remove("hidden");
+    $("fb-box").className = "feedback " + (ok ? "ok" : "ng");
+    $("fb-mark").textContent = ok ? "⭕🎉" : "❌";
+    $("fb-label").textContent = ok ? "せいかい！" : "おしい！ こたえは…";
+    $("fb-word").textContent = correct;
+    $("fb-mean").textContent = cur.m || "";
+    $("fb-yours").textContent = ok ? "" : "きみの こたえ： " + ans;
+    $("quiz-bar").style.width = ((pos + 1) / queue.length * 100) + "%";
+    $("btn-next").focus();
+  }
+  $("btn-speak").addEventListener("click", function(){
+    if (!heard) {
+      heard = true;
+      setSpeakLabel();
+      speakTimes(queue[pos].w, 3);
+    } else {
+      speakTimes(queue[pos].w, 1);
+    }
+  });
+  $("btn-check").addEventListener("click", check);
+  $("quiz-input").addEventListener("keydown", function(ev){
+    if (ev.key === "Enter") { ev.preventDefault(); check(); }
+  });
+  $("btn-next").addEventListener("click", function(){
+    pos++;
+    if (pos < queue.length) { ask(); } else { finish(); }
+  });
+  $("btn-quit").addEventListener("click", function(){
+    try { window.speechSynthesis.cancel(); } catch (e) {}
+    show("home");
+  });
+
+  /* ---- けっか ---- */
+  function finish(){
+    var okCount = queue.length - misses.length;
+    $("result-score").textContent = okCount + " / " + queue.length;
+    var msg;
+    if (misses.length === 0) msg = "パーフェクト！ すごい！ 🏆";
+    else if (okCount >= queue.length * 0.7) msg = "いいちょうし！ 💮";
+    else msg = "まちがえたのを れんしゅうしよう！ 💪";
+    $("result-msg").textContent = msg;
+    var ml = $("result-miss");
+    ml.innerHTML = "";
+    misses.forEach(function(x){
+      var b = document.createElement("b");
+      b.textContent = norm(x.w);
+      ml.appendChild(b);
+    });
+    $("btn-retry-miss").classList.toggle("hidden", misses.length === 0);
+    show("result");
+  }
+  $("btn-retry-miss").addEventListener("click", function(){ startQuiz(misses.slice()); });
+  $("btn-home1").addEventListener("click", function(){ show("home"); });
+
+  /* ---- せいせき ---- */
+  function refreshScore(){
+    var order = {"🔴": 0, "🟡": 1, "⚪": 2, "🟢": 3};
+    var rows = words.map(function(x, idx){ return {x: x, lv: levelOf(x.w), idx: idx}; });
+    rows.sort(function(a, b){ return (order[a.lv] - order[b.lv]) || (a.idx - b.idx); });
+    var box = $("score-list");
+    box.innerHTML = "";
+    rows.forEach(function(r){
+      var rec = stats[norm(r.x.w)] || {ok: 0, ng: 0};
+      var div = document.createElement("div");
+      div.className = "score-row";
+      var lv = document.createElement("span"); lv.className = "lv"; lv.textContent = r.lv;
+      var wbox = document.createElement("div"); wbox.className = "w";
+      var b = document.createElement("b"); b.textContent = norm(r.x.w);
+      var sm = document.createElement("small"); sm.textContent = r.x.m || "";
+      wbox.appendChild(b); wbox.appendChild(sm);
+      var cnt = document.createElement("span"); cnt.className = "cnt";
+      cnt.textContent = "⭕" + rec.ok + " ❌" + rec.ng;
+      div.appendChild(lv); div.appendChild(wbox); div.appendChild(cnt);
+      box.appendChild(div);
+    });
+    var wk = weakWords();
+    var b2 = $("btn-weak2");
+    if (wk.length) {
+      b2.textContent = "💪 にがてな " + wk.length + "こだけ れんしゅう";
+      b2.classList.remove("hidden");
+    } else {
+      b2.classList.add("hidden");
+    }
+  }
+  $("btn-weak2").addEventListener("click", function(){ startQuiz(weakWords()); });
+  $("btn-stats-reset").addEventListener("click", function(){
+    if (!confirm("せいせきの きろくを ぜんぶ けしますか？")) return;
+    stats = {};
+    saveStats();
+    refreshScore();
+  });
+  $("btn-home3").addEventListener("click", function(){ show("home"); });
+
+  /* ---- へんしゅう ---- */
+  $("btn-save").addEventListener("click", function(){
+    var lines = $("edit-area").value.split("\n").map(function(s){ return s.trim(); }).filter(function(s){ return s.length; });
+    if (!lines.length) { alert("たんごを 1つ いじょう かいてね"); return; }
+    words = lines.map(function(line){
+      var cut = -1;
+      for (var i = 0; i < line.length; i++) {
+        if (line[i] === "=" || line[i] === "＝") { cut = i; break; }
+      }
+      if (cut < 0) {
+        var w0 = line.trim();
+        return {w: w0, m: defaultMeaning(w0)};
+      }
+      return {w: line.slice(0, cut).trim(), m: line.slice(cut + 1).trim()};
+    }).filter(function(x){ return x.w.length; });
+    if (!words.length) { words = DEFAULT_LIST.slice(); }
+    try { localStorage.setItem("spell_words_v2", JSON.stringify(words)); } catch (e) {}
+    show("home");
+  });
+  $("btn-reset").addEventListener("click", function(){
+    $("edit-area").value = DEFAULT_LIST.map(function(x){ return x.w + " = " + x.m; }).join("\n");
+  });
+  $("btn-home2").addEventListener("click", function(){ show("home"); });
+
+  refreshHome();
+})();
+</script>
+</body>
+</html>
