@@ -253,13 +253,13 @@
     <p class="summary" id="home-summary"></p>
     <button class="btn-big" id="btn-start">▶ テストを はじめる</button>
     <button class="btn-sub hidden" id="btn-weak"></button>
-    <button class="btn-sub" id="btn-score">📊 せいせきを みる</button>
     <label class="row"><input type="checkbox" id="chk-shuffle"> じゅんばんを シャッフルする</label>
-    <label class="row"><input type="checkbox" id="chk-sound"> 🔔 ⭕❌の こえを だす（Good job! など）</label>
     <label class="row"><input type="checkbox" id="chk-keyboard"> ⌨️ カードではなく キーボードで かく</label>
+    <label class="row"><input type="checkbox" id="chk-sound"> 🔔 ⭕❌の こえを だす（Good job! など）</label>
     <label class="row">🗣️ こえ
       <select id="sel-voice"><option value="">じどうで えらぶ</option></select>
     </label>
+    <button class="btn-sub" id="btn-score">📊 せいせきを みる</button>
     <button class="btn-sub" id="btn-edit">📝 たんごリストを かえる</button>
     <p class="note">🔊ボタンで 3かい よみあげます（ほんばんと おなじ）</p>
   </div>
@@ -417,7 +417,7 @@
 
   /* ---- 単語リスト読み込み（旧形式からの引き継ぎつき） ---- */
   var words = DEFAULT_LIST.slice();
-  var shuffleOn = false, keyboardOn = false, savedVoiceURI = "";
+  var shuffleOn = false, keyboardOn = false, savedVoiceURI = "", voicePicked = false;
   try {
     var v2 = localStorage.getItem("spell_words_v2");
     if (v2) {
@@ -437,7 +437,8 @@
     if (!words.length) words = DEFAULT_LIST.slice();
     shuffleOn = localStorage.getItem("spell_shuffle") === "1";
     keyboardOn = localStorage.getItem("spell_keyboard") === "1";
-    savedVoiceURI = localStorage.getItem("spell_voice") || "";
+    var sv = localStorage.getItem("spell_voice");
+    if (sv !== null) { savedVoiceURI = sv; voicePicked = true; } /* まだ えらんで いなければ サマンサ */
   } catch (e) {}
 
   /* ---- せいせき（単語ごとの記録） ---- */
@@ -493,6 +494,11 @@
     if (/compact/i.test(v.name)) s -= 2;
     return s;
   }
+  function samanthaVoice(){
+    var sam = englishVoices().filter(function(v){ return /samantha/i.test(v.name); });
+    sam.sort(function(a, b){ return voiceScore(b) - voiceScore(a); });
+    return sam[0] || null;
+  }
   function resolveVoice(){
     var en = englishVoices();
     if (!en.length) return null;
@@ -501,12 +507,14 @@
         if (en[i].voiceURI === savedVoiceURI) return en[i];
       }
     }
+    if (!voicePicked && samanthaVoice()) return samanthaVoice();
     en.sort(function(a, b){ return voiceScore(b) - voiceScore(a); });
     return en[0];
   }
   function fillVoiceSelect(){
     var sel = $("sel-voice");
     var cur = savedVoiceURI;
+    if (!voicePicked && samanthaVoice()) cur = samanthaVoice().voiceURI;
     while (sel.options.length > 1) sel.remove(1);
     englishVoices().forEach(function(v){
       var o = document.createElement("option");
@@ -523,6 +531,7 @@
   }
   $("sel-voice").addEventListener("change", function(){
     savedVoiceURI = this.value;
+    voicePicked = true;
     try { localStorage.setItem("spell_voice", savedVoiceURI); } catch (e) {}
     speakTimes("hello", 1);
   });
