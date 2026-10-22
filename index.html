@@ -23,6 +23,9 @@
     --border: #eadfc8;
     --input-bg: #fffdf7;
     --tile-bg: #fff3d6;
+    --pink: #ff8fb8;
+    --pink-dark: #e0608f;
+    --pink-text: #ffffff;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -41,6 +44,9 @@
       --border: #453c2d;
       --input-bg: #221d15;
       --tile-bg: #3a2f1c;
+      --pink: #ff8fb8;
+      --pink-dark: #ff6fa3;
+      --pink-text: #3a0d1f;
     }
   }
   :root[data-theme="dark"] {
@@ -59,6 +65,9 @@
     --border: #453c2d;
     --input-bg: #221d15;
     --tile-bg: #3a2f1c;
+    --pink: #ff8fb8;
+    --pink-dark: #ff6fa3;
+    --pink-text: #3a0d1f;
   }
   html { scroll-padding-top: env(safe-area-inset-top, 0px); }
   * { box-sizing: border-box; }
@@ -239,6 +248,60 @@
   .score-row .w b { font-size: 1.05rem; letter-spacing: .06em; }
   .score-row .w small { display: block; color: var(--muted); font-size: .85rem; }
   .score-row .cnt { color: var(--muted); font-size: .85rem; white-space: nowrap; }
+  .set-title { text-align: center; font-weight: 700; margin: 14px 0 0; }
+  .sets { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-top: 8px; }
+  .set-btn { padding: 12px 6px; font-size: 1.1rem; line-height: 1.3; background: var(--accent); color: var(--accent-text); }
+  .set-btn:active { background: var(--accent-dark); }
+  .set-btn small { display: block; font-size: .8rem; opacity: .85; }
+  .btn-gacha { background: var(--pink); color: var(--pink-text); }
+  .btn-gacha:active { background: var(--pink-dark); }
+  .gacha-left { text-align: center; color: var(--muted); font-weight: 700; margin: 0; }
+  .gacha-stage { display: flex; justify-content: center; align-items: center; min-height: 250px; }
+  .capsule {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 4px solid var(--pink-dark);
+    background: linear-gradient(to bottom, var(--pink) 0 50%, var(--card) 50% 100%);
+  }
+  .capsule::after { content: ""; position: absolute; left: -4px; right: -4px; top: calc(50% - 4px); height: 8px; background: var(--pink-dark); }
+  .capsule.shake { animation: shake .25s ease-in-out 5; }
+  @keyframes shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-14deg); } 75% { transform: rotate(14deg); } }
+  .prize {
+    width: 210px;
+    border: 4px solid var(--border);
+    border-radius: 20px;
+    background: var(--card);
+    padding: 16px 10px;
+    text-align: center;
+    animation: pop .45s ease-out;
+  }
+  .prize .em { font-size: 5rem; line-height: 1.15; }
+  .prize .nm { font-size: 1.4rem; font-weight: 800; }
+  .prize .rr { font-size: .95rem; color: var(--muted); font-weight: 700; }
+  .prize .nw { font-weight: 800; color: var(--pink-dark); min-height: 1.6em; }
+  .prize.rare { border-color: var(--pink); }
+  .prize.kira, .zcell.kira {
+    border-color: #e6b422;
+    background: linear-gradient(135deg, #fff7cc, #ffd9ef, #d9ecff, #fff7cc);
+    background-size: 300% 300%;
+  }
+  .prize.kira { animation: pop .45s ease-out, shimmer 3s linear infinite; }
+  .prize.kira .nm, .prize.kira .rr, .zcell.kira .nm, .zcell.kira .ct { color: #3d2f1e; }
+  @keyframes pop { from { transform: scale(.3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  @keyframes shimmer { to { background-position: 300% 300%; } }
+  .zukan { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 8px; margin-bottom: 6px; }
+  .zcell { min-width: 0; border: 3px solid var(--border); border-radius: 14px; padding: 6px 2px; text-align: center; }
+  .zcell .em { font-size: 2.2rem; line-height: 1.25; }
+  .zcell .nm { font-size: .7rem; font-weight: 700; overflow-wrap: anywhere; }
+  .zcell .ct { font-size: .7rem; color: var(--muted); min-height: 1.2em; }
+  .zcell.rare { border-color: var(--pink); }
+  .zcell.none { background: transparent; border-style: dashed; }
+  .zcell.none .em, .zcell.none .nm { color: var(--muted); }
+  @media (prefers-reduced-motion: reduce) {
+    .capsule.shake, .prize, .prize.kira { animation: none; }
+  }
   .hidden { display: none; }
 </style>
 </head>
@@ -251,8 +314,10 @@
   <div id="screen-home" class="card">
     <p style="text-align:center; font-size:1.05rem; margin:0;">たんご：<b id="home-count"></b>こ</p>
     <p class="summary" id="home-summary"></p>
-    <button class="btn-big" id="btn-start">▶ テストを はじめる</button>
+    <p class="set-title">▶ セットを えらんで はじめる（10もんずつ）</p>
+    <div class="sets" id="home-sets"></div>
     <button class="btn-sub hidden" id="btn-weak"></button>
+    <button class="btn-big btn-gacha hidden" id="btn-gacha-home"></button>
     <label class="row"><input type="checkbox" id="chk-shuffle"> じゅんばんを シャッフルする</label>
     <label class="row"><input type="checkbox" id="chk-keyboard"> ⌨️ カードではなく キーボードで かく</label>
     <label class="row"><input type="checkbox" id="chk-sound"> 🔔 ⭕❌の こえを だす（Good job! など）</label>
@@ -260,6 +325,7 @@
       <select id="sel-voice"><option value="">じどうで えらぶ</option></select>
     </label>
     <button class="btn-sub" id="btn-score">📊 せいせきを みる</button>
+    <button class="btn-sub" id="btn-zukan">🎀 カードずかん</button>
     <button class="btn-sub" id="btn-edit">📝 たんごリストを かえる</button>
     <p class="note">🔊ボタンで 3かい よみあげます（ほんばんと おなじ）</p>
   </div>
@@ -299,7 +365,8 @@
       <div class="result-score" id="result-score"></div>
       <div id="result-msg" style="text-align:center; font-size:1.3rem;"></div>
       <div class="miss-list" id="result-miss"></div>
-      <button class="btn-big hidden" id="btn-retry-miss">❌ まちがえたのだけ もういちど</button>
+      <button class="btn-big btn-gacha" id="btn-gacha-result">🎁 ガチャを まわす！</button>
+      <button class="btn-sub hidden" id="btn-retry-miss">❌ まちがえたのだけ もういちど</button>
       <button class="btn-sub" id="btn-home1">ホームに もどる</button>
     </div>
   </div>
@@ -313,6 +380,35 @@
       <button class="btn-big hidden" id="btn-weak2"></button>
       <button class="btn-sub" id="btn-stats-reset">きろくを ぜんぶ けす</button>
       <button class="btn-sub" id="btn-home3">ホームに もどる</button>
+    </div>
+  </div>
+
+  <!-- ガチャ -->
+  <div id="screen-gacha" class="hidden">
+    <div class="card">
+      <p class="gacha-left" id="gacha-left"></p>
+      <div class="gacha-stage">
+        <div class="capsule" id="gacha-capsule"></div>
+        <div class="prize hidden" id="gacha-prize">
+          <div class="em" id="prize-em"></div>
+          <div class="nm" id="prize-nm"></div>
+          <div class="rr" id="prize-rr"></div>
+          <div class="nw" id="prize-nw"></div>
+        </div>
+      </div>
+      <button class="btn-big btn-gacha" id="btn-spin">まわす！</button>
+      <button class="btn-sub" id="btn-gacha-zukan">🎀 ずかんを みる</button>
+      <button class="btn-sub" id="btn-home4">ホームに もどる</button>
+    </div>
+  </div>
+
+  <!-- ずかん -->
+  <div id="screen-zukan" class="hidden">
+    <div class="card">
+      <p style="text-align:center; font-size:1.2rem; margin:0 0 4px;">🎀 カードずかん</p>
+      <p class="legend" id="zukan-count"></p>
+      <div class="zukan" id="zukan-list"></div>
+      <button class="btn-sub" id="btn-home5">ホームに もどる</button>
     </div>
   </div>
 
@@ -385,6 +481,24 @@
     {w:"zipper", m:"チャック 🤐"}
   ];
   var GAP_MS = 2500; /* 3回読みの間隔 */
+  var SET_SIZE = 10;
+
+  /* ---- ガチャの カード（r: 0=ノーマル 1=レア 2=キラキラ） ---- */
+  var CARDS = [
+    {e:"🐰", n:"うさぎ", r:0}, {e:"🐱", n:"ねこ", r:0}, {e:"🐶", n:"いぬ", r:0},
+    {e:"🐹", n:"ハムスター", r:0}, {e:"🐥", n:"ひよこ", r:0}, {e:"🐼", n:"パンダ", r:0},
+    {e:"🐨", n:"コアラ", r:0}, {e:"🐿️", n:"りす", r:0}, {e:"🐞", n:"てんとうむし", r:0},
+    {e:"🍓", n:"いちご", r:0}, {e:"🍰", n:"ケーキ", r:0}, {e:"🍩", n:"ドーナツ", r:0},
+    {e:"🍭", n:"キャンディ", r:0}, {e:"🍦", n:"ソフトクリーム", r:0}, {e:"🌷", n:"チューリップ", r:0},
+    {e:"🌸", n:"さくら", r:0}, {e:"🎀", n:"リボン", r:0}, {e:"🧸", n:"くまさん", r:0},
+    {e:"🦄", n:"ユニコーン", r:1}, {e:"🧁", n:"カップケーキ", r:1}, {e:"🦋", n:"ちょうちょ", r:1},
+    {e:"🐬", n:"イルカ", r:1}, {e:"🌈", n:"にじ", r:1}, {e:"🦩", n:"フラミンゴ", r:1},
+    {e:"🐧", n:"ペンギン", r:1}, {e:"🎂", n:"バースデーケーキ", r:1}, {e:"💐", n:"はなたば", r:1},
+    {e:"👸", n:"プリンセス", r:2}, {e:"🧜‍♀️", n:"マーメイド", r:2}, {e:"🧚", n:"ようせい", r:2},
+    {e:"🏰", n:"おしろ", r:2}, {e:"💎", n:"ほうせき", r:2}
+  ];
+  var RARITY_NAME = ["ノーマル", "⭐ レア", "✨ キラキラ"];
+  var RARITY_CLASS = ["", "rare", "kira"];
 
   /* ---- ⭕❌のこえ（英語でほめる・はげます） ---- */
   var soundOn = true;
@@ -447,6 +561,23 @@
     var s = JSON.parse(localStorage.getItem("spell_stats") || "{}");
     if (s && typeof s === "object") stats = s;
   } catch (e) {}
+  /* ---- セットの ベスト・ガチャけん・あつめた カード ---- */
+  var setBest = {}, tickets = [], owned = {};
+  try {
+    var sb0 = JSON.parse(localStorage.getItem("spell_set_best") || "{}");
+    if (sb0 && typeof sb0 === "object") setBest = sb0;
+    var tk0 = JSON.parse(localStorage.getItem("spell_tickets") || "[]");
+    if (Array.isArray(tk0)) tickets = tk0;
+    var ow0 = JSON.parse(localStorage.getItem("spell_cards") || "{}");
+    if (ow0 && typeof ow0 === "object") owned = ow0;
+  } catch (e) {}
+  function saveGacha(){
+    try {
+      localStorage.setItem("spell_set_best", JSON.stringify(setBest));
+      localStorage.setItem("spell_tickets", JSON.stringify(tickets));
+      localStorage.setItem("spell_cards", JSON.stringify(owned));
+    } catch (e) {}
+  }
   function saveStats(){ try { localStorage.setItem("spell_stats", JSON.stringify(stats)); } catch (e) {} }
   function recOf(w){
     var k = norm(w);
@@ -467,15 +598,16 @@
     });
   }
 
-  var queue = [], pos = 0, misses = [];
+  var queue = [], pos = 0, misses = [], currentSetKey = null;
   var heard = false;
 
   var $ = function(id){ return document.getElementById(id); };
-  var screens = ["home","quiz","result","edit","score"];
+  var screens = ["home","quiz","result","edit","score","gacha","zukan"];
   function show(name){
     screens.forEach(function(s){ $("screen-"+s).classList.toggle("hidden", s !== name); });
     if (name === "home") refreshHome();
     if (name === "score") refreshScore();
+    if (name === "zukan") refreshZukan();
   }
 
   /* ---- 読み上げ ---- */
@@ -576,7 +708,31 @@
     } else {
       b.classList.add("hidden");
     }
+    var box = $("home-sets");
+    box.innerHTML = "";
+    setsOf().forEach(function(list, i){
+      var key = setKey(list);
+      var btn = document.createElement("button");
+      btn.className = "set-btn";
+      btn.textContent = "セット" + (i + 1);
+      var range = document.createElement("small");
+      range.textContent = (i * SET_SIZE + 1) + "〜" + (i * SET_SIZE + list.length) + "ばん";
+      var best = document.createElement("small");
+      best.textContent = (key in setBest) ? (setBest[key] === list.length ? "👑 " : "⭐ ") + setBest[key] + " / " + list.length : "まだ";
+      btn.appendChild(range); btn.appendChild(best);
+      btn.addEventListener("click", function(){ startQuiz(list, key); });
+      box.appendChild(btn);
+    });
+    var g = $("btn-gacha-home");
+    g.textContent = "🎁 ガチャを まわす（あと " + tickets.length + "かい）";
+    g.classList.toggle("hidden", !tickets.length);
   }
+  function setsOf(){
+    var out = [];
+    for (var i = 0; i < words.length; i += SET_SIZE) out.push(words.slice(i, i + SET_SIZE));
+    return out;
+  }
+  function setKey(list){ return list.map(function(x){ return norm(x.w); }).join(","); }
   $("chk-shuffle").addEventListener("change", function(){
     shuffleOn = this.checked;
     try { localStorage.setItem("spell_shuffle", shuffleOn ? "1" : "0"); } catch (e) {}
@@ -590,9 +746,10 @@
     keyboardOn = this.checked;
     try { localStorage.setItem("spell_keyboard", keyboardOn ? "1" : "0"); } catch (e) {}
   });
-  $("btn-start").addEventListener("click", function(){ startQuiz(words.slice()); });
   $("btn-weak").addEventListener("click", function(){ startQuiz(weakWords()); });
   $("btn-score").addEventListener("click", function(){ show("score"); });
+  $("btn-zukan").addEventListener("click", function(){ show("zukan"); });
+  $("btn-gacha-home").addEventListener("click", openGacha);
   $("btn-edit").addEventListener("click", function(){
     $("edit-area").value = words.map(function(x){ return x.m ? x.w + " = " + x.m : x.w; }).join("\n");
     show("edit");
@@ -605,8 +762,9 @@
       var t = a[i]; a[i] = a[j]; a[j] = t;
     }
   }
-  function startQuiz(list){
+  function startQuiz(list, key){
     if (!list.length) return;
+    currentSetKey = key || null;
     queue = list.slice();
     if (shuffleOn) shuffleInPlace(queue);
     pos = 0; misses = [];
@@ -783,10 +941,87 @@
       ml.appendChild(b);
     });
     $("btn-retry-miss").classList.toggle("hidden", misses.length === 0);
+    if (currentSetKey && !(setBest[currentSetKey] >= okCount)) setBest[currentSetKey] = okCount;
+    tickets.push(okCount / queue.length); /* さいごまで やったら ガチャけん 1まい */
+    saveGacha();
     show("result");
   }
   $("btn-retry-miss").addEventListener("click", function(){ startQuiz(misses.slice()); });
   $("btn-home1").addEventListener("click", function(){ show("home"); });
+  $("btn-gacha-result").addEventListener("click", openGacha);
+
+  /* ---- ガチャ ---- */
+  var spinning = false;
+  function drawCard(acc){
+    /* せいかいが おおいほど レアが でやすい */
+    var w = acc >= 1 ? [40, 45, 15] : acc >= 0.7 ? [60, 32, 8] : [72, 24, 4];
+    var x = Math.random() * 100;
+    var r = x < w[0] ? 0 : x < w[0] + w[1] ? 1 : 2;
+    var pool = CARDS.filter(function(c){ return c.r === r; });
+    var fresh = pool.filter(function(c){ return !owned[c.e]; });
+    var list = fresh.length ? fresh : pool; /* もってない カードを さきに だす */
+    return list[Math.floor(Math.random() * list.length)];
+  }
+  function openGacha(){
+    show("gacha");
+    $("gacha-capsule").classList.remove("hidden", "shake");
+    $("gacha-prize").classList.add("hidden");
+    $("btn-spin").textContent = "まわす！";
+    updateGacha();
+  }
+  function updateGacha(){
+    $("gacha-left").textContent = "ガチャけん のこり " + tickets.length + "まい";
+    $("btn-spin").classList.toggle("hidden", !tickets.length);
+  }
+  $("btn-spin").addEventListener("click", function(){
+    if (spinning || !tickets.length) return;
+    spinning = true;
+    var c = drawCard(tickets.shift());
+    var isNew = !owned[c.e];
+    owned[c.e] = (owned[c.e] || 0) + 1;
+    saveGacha();
+    var cap = $("gacha-capsule");
+    $("gacha-prize").classList.add("hidden");
+    cap.classList.remove("hidden", "shake");
+    void cap.offsetWidth;
+    cap.classList.add("shake");
+    var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setTimeout(function(){
+      cap.classList.add("hidden");
+      var pz = $("gacha-prize");
+      pz.className = "prize " + RARITY_CLASS[c.r];
+      $("prize-em").textContent = c.e;
+      $("prize-nm").textContent = c.n;
+      $("prize-rr").textContent = RARITY_NAME[c.r];
+      $("prize-nw").textContent = isNew ? "NEW！" : owned[c.e] + "まいめ";
+      playSound(true);
+      $("btn-spin").textContent = "もう1かい まわす！";
+      spinning = false;
+      updateGacha();
+    }, still ? 300 : 1300);
+  });
+  $("btn-gacha-zukan").addEventListener("click", function(){ show("zukan"); });
+  $("btn-home4").addEventListener("click", function(){ show("home"); });
+
+  /* ---- ずかん ---- */
+  function refreshZukan(){
+    var box = $("zukan-list");
+    box.innerHTML = "";
+    var have = 0;
+    CARDS.forEach(function(c){
+      var n = owned[c.e] || 0;
+      if (n) have++;
+      var d = document.createElement("div");
+      d.className = "zcell " + RARITY_CLASS[c.r] + (n ? "" : " none");
+      var em = document.createElement("div"); em.className = "em"; em.textContent = n ? c.e : "？";
+      var nm = document.createElement("div"); nm.className = "nm"; nm.textContent = n ? c.n : "？？？";
+      var ct = document.createElement("div"); ct.className = "ct"; ct.textContent = n > 1 ? "×" + n : "";
+      d.appendChild(em); d.appendChild(nm); d.appendChild(ct);
+      box.appendChild(d);
+    });
+    $("zukan-count").textContent = "あつめた カード " + have + " / " + CARDS.length + "　⭐レア　✨キラキラ";
+  }
+  $("btn-home5").addEventListener("click", function(){ show("home"); });
 
   /* ---- せいせき ---- */
   function refreshScore(){
