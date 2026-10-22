@@ -256,6 +256,7 @@
   .btn-gacha { background: var(--pink); color: var(--pink-text); }
   .btn-gacha:active { background: var(--pink-dark); }
   .gacha-left { text-align: center; color: var(--muted); font-weight: 700; margin: 0; }
+  .gacha-left.complete, .legend.complete { color: var(--pink-dark); font-size: 1.3rem; font-weight: 800; }
   .gacha-stage { display: flex; justify-content: center; align-items: center; min-height: 250px; }
   .capsule {
     position: relative;
@@ -485,17 +486,10 @@
 
   /* ---- ガチャの カード（r: 0=ノーマル 1=レア 2=キラキラ） ---- */
   var CARDS = [
-    {e:"🐰", n:"うさぎ", r:0}, {e:"🐱", n:"ねこ", r:0}, {e:"🐶", n:"いぬ", r:0},
-    {e:"🐹", n:"ハムスター", r:0}, {e:"🐥", n:"ひよこ", r:0}, {e:"🐼", n:"パンダ", r:0},
-    {e:"🐨", n:"コアラ", r:0}, {e:"🐿️", n:"りす", r:0}, {e:"🐞", n:"てんとうむし", r:0},
-    {e:"🍓", n:"いちご", r:0}, {e:"🍰", n:"ケーキ", r:0}, {e:"🍩", n:"ドーナツ", r:0},
-    {e:"🍭", n:"キャンディ", r:0}, {e:"🍦", n:"ソフトクリーム", r:0}, {e:"🌷", n:"チューリップ", r:0},
-    {e:"🌸", n:"さくら", r:0}, {e:"🎀", n:"リボン", r:0}, {e:"🧸", n:"くまさん", r:0},
-    {e:"🦄", n:"ユニコーン", r:1}, {e:"🧁", n:"カップケーキ", r:1}, {e:"🦋", n:"ちょうちょ", r:1},
-    {e:"🐬", n:"イルカ", r:1}, {e:"🌈", n:"にじ", r:1}, {e:"🦩", n:"フラミンゴ", r:1},
-    {e:"🐧", n:"ペンギン", r:1}, {e:"🎂", n:"バースデーケーキ", r:1}, {e:"💐", n:"はなたば", r:1},
-    {e:"👸", n:"プリンセス", r:2}, {e:"🧜‍♀️", n:"マーメイド", r:2}, {e:"🧚", n:"ようせい", r:2},
-    {e:"🏰", n:"おしろ", r:2}, {e:"💎", n:"ほうせき", r:2}
+    {e:"🐰", n:"うさぎ", r:0}, {e:"🐱", n:"ねこ", r:0}, {e:"🐹", n:"ハムスター", r:0},
+    {e:"🍓", n:"いちご", r:0}, {e:"🍰", n:"ケーキ", r:0}, {e:"🎀", n:"リボン", r:0},
+    {e:"🦄", n:"ユニコーン", r:1}, {e:"🌈", n:"にじ", r:1}, {e:"🧁", n:"カップケーキ", r:1},
+    {e:"👸", n:"プリンセス", r:2}
   ];
   var RARITY_NAME = ["ノーマル", "⭐ レア", "✨ キラキラ"];
   var RARITY_CLASS = ["", "rare", "kira"];
@@ -725,7 +719,8 @@
     });
     var g = $("btn-gacha-home");
     g.textContent = "🎁 ガチャを まわす（あと " + tickets.length + "かい）";
-    g.classList.toggle("hidden", !tickets.length);
+    g.classList.toggle("hidden", !tickets.length || isComplete());
+    $("btn-zukan").textContent = "🎀 カードずかん（" + ownedCount() + " / " + CARDS.length + "）" + (isComplete() ? " 🎉" : "");
   }
   function setsOf(){
     var out = [];
@@ -942,8 +937,9 @@
     });
     $("btn-retry-miss").classList.toggle("hidden", misses.length === 0);
     if (currentSetKey && !(setBest[currentSetKey] >= okCount)) setBest[currentSetKey] = okCount;
-    tickets.push(okCount / queue.length); /* さいごまで やったら ガチャけん 1まい */
+    if (!isComplete()) tickets.push(okCount / queue.length); /* さいごまで やったら ガチャけん 1まい */
     saveGacha();
+    $("btn-gacha-result").classList.toggle("hidden", isComplete());
     show("result");
   }
   $("btn-retry-miss").addEventListener("click", function(){ startQuiz(misses.slice()); });
@@ -952,14 +948,18 @@
 
   /* ---- ガチャ ---- */
   var spinning = false;
+  function ownedCount(){ return CARDS.filter(function(c){ return owned[c.e]; }).length; }
+  function isComplete(){ return ownedCount() === CARDS.length; }
   function drawCard(acc){
-    /* せいかいが おおいほど レアが でやすい */
-    var w = acc >= 1 ? [40, 45, 15] : acc >= 0.7 ? [60, 32, 8] : [72, 24, 4];
-    var x = Math.random() * 100;
-    var r = x < w[0] ? 0 : x < w[0] + w[1] ? 1 : 2;
-    var pool = CARDS.filter(function(c){ return c.r === r; });
-    var fresh = pool.filter(function(c){ return !owned[c.e]; });
-    var list = fresh.length ? fresh : pool; /* もってない カードを さきに だす */
+    /* かぶりなし。キラキラは さいごの 1まいに とっておく */
+    var fresh = CARDS.filter(function(c){ return !owned[c.e]; });
+    var early = fresh.filter(function(c){ return c.r < 2; });
+    if (!early.length) return fresh[Math.floor(Math.random() * fresh.length)];
+    /* せいかいが おおいほど レアが さきに でやすい */
+    var rareP = acc >= 1 ? 0.55 : acc >= 0.7 ? 0.35 : 0.25;
+    var rares = early.filter(function(c){ return c.r === 1; });
+    var normals = early.filter(function(c){ return c.r === 0; });
+    var list = !normals.length ? rares : !rares.length ? normals : (Math.random() < rareP ? rares : normals);
     return list[Math.floor(Math.random() * list.length)];
   }
   function openGacha(){
@@ -970,11 +970,14 @@
     updateGacha();
   }
   function updateGacha(){
-    $("gacha-left").textContent = "ガチャけん のこり " + tickets.length + "まい";
-    $("btn-spin").classList.toggle("hidden", !tickets.length);
+    var done = isComplete();
+    var left = $("gacha-left");
+    left.textContent = done ? "🎉 コンプリート！ ぜんぶ あつめたよ！" : "ガチャけん のこり " + tickets.length + "まい（カード あと " + (CARDS.length - ownedCount()) + "まい）";
+    left.classList.toggle("complete", done);
+    $("btn-spin").classList.toggle("hidden", !tickets.length || done);
   }
   $("btn-spin").addEventListener("click", function(){
-    if (spinning || !tickets.length) return;
+    if (spinning || !tickets.length || isComplete()) return;
     spinning = true;
     var c = drawCard(tickets.shift());
     var isNew = !owned[c.e];
@@ -1019,7 +1022,9 @@
       d.appendChild(em); d.appendChild(nm); d.appendChild(ct);
       box.appendChild(d);
     });
-    $("zukan-count").textContent = "あつめた カード " + have + " / " + CARDS.length + "　⭐レア　✨キラキラ";
+    var zc = $("zukan-count");
+    zc.textContent = isComplete() ? "🎉 コンプリート！ ぜんぶ あつめたよ！" : "あつめた カード " + have + " / " + CARDS.length + "　⭐レア　✨キラキラ";
+    zc.classList.toggle("complete", isComplete());
   }
   $("btn-home5").addEventListener("click", function(){ show("home"); });
 
