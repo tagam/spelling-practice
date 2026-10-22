@@ -22,6 +22,7 @@
     --ng-bg: #fdeaea;
     --border: #eadfc8;
     --input-bg: #fffdf7;
+    --tile-bg: #fff3d6;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -39,6 +40,7 @@
       --ng-bg: #43211f;
       --border: #453c2d;
       --input-bg: #221d15;
+      --tile-bg: #3a2f1c;
     }
   }
   :root[data-theme="dark"] {
@@ -56,6 +58,7 @@
     --ng-bg: #43211f;
     --border: #453c2d;
     --input-bg: #221d15;
+    --tile-bg: #3a2f1c;
   }
   html { scroll-padding-top: env(safe-area-inset-top, 0px); }
   * { box-sizing: border-box; }
@@ -136,6 +139,44 @@
     font-family: inherit;
   }
   input[type="text"]:focus { outline: 3px solid var(--accent); border-color: var(--accent); }
+  .btn-big:disabled { opacity: .45; cursor: default; }
+  .slots { display: flex; justify-content: center; gap: 5px; margin-bottom: 18px; }
+  .slot {
+    flex: 0 1 46px;
+    min-width: 0;
+    height: 56px;
+    border: 3px dashed var(--border);
+    border-radius: 12px;
+    background: var(--input-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    font-weight: 800;
+  }
+  .slot.fixed { flex-basis: 16px; border: none; background: transparent; }
+  .slots.long .slot { height: 46px; font-size: 1.2rem; }
+  .pool { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; min-height: 64px; padding: 4px 0; }
+  .tile {
+    width: 52px;
+    height: 58px;
+    border-radius: 12px;
+    background: var(--tile-bg);
+    color: var(--text);
+    border: 2px solid var(--accent);
+    box-shadow: 0 3px 0 var(--accent-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 800;
+    cursor: pointer;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .slot .tile { width: 100%; height: 100%; font-size: inherit; box-shadow: none; }
+  .tile.dragging { position: relative; z-index: 10; box-shadow: 0 8px 18px rgba(0,0,0,.25); }
   .feedback { text-align: center; padding: 10px 0 4px; }
   .feedback .mark { font-size: 3rem; line-height: 1.2; }
   .feedback .word {
@@ -215,6 +256,7 @@
     <button class="btn-sub" id="btn-score">📊 せいせきを みる</button>
     <label class="row"><input type="checkbox" id="chk-shuffle"> じゅんばんを シャッフルする</label>
     <label class="row"><input type="checkbox" id="chk-sound"> 🔔 ⭕❌の こえを だす（Good job! など）</label>
+    <label class="row"><input type="checkbox" id="chk-keyboard"> ⌨️ カードではなく キーボードで かく</label>
     <label class="row">🗣️ こえ
       <select id="sel-voice"><option value="">じどうで えらぶ</option></select>
     </label>
@@ -229,6 +271,10 @@
       <div class="bar"><i id="quiz-bar" style="width:0%"></i></div>
       <div id="quiz-ask">
         <button class="btn-speak" id="btn-speak">🔊<span>きく</span></button>
+        <div id="quiz-cards">
+          <div class="slots" id="card-slots"></div>
+          <div class="pool" id="card-pool"></div>
+        </div>
         <input type="text" id="quiz-input" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done" placeholder="ここに かく">
         <button class="btn-big" id="btn-check">けってい</button>
       </div>
@@ -371,7 +417,7 @@
 
   /* ---- 単語リスト読み込み（旧形式からの引き継ぎつき） ---- */
   var words = DEFAULT_LIST.slice();
-  var shuffleOn = false, savedVoiceURI = "";
+  var shuffleOn = false, keyboardOn = false, savedVoiceURI = "";
   try {
     var v2 = localStorage.getItem("spell_words_v2");
     if (v2) {
@@ -390,6 +436,7 @@
     }
     if (!words.length) words = DEFAULT_LIST.slice();
     shuffleOn = localStorage.getItem("spell_shuffle") === "1";
+    keyboardOn = localStorage.getItem("spell_keyboard") === "1";
     savedVoiceURI = localStorage.getItem("spell_voice") || "";
   } catch (e) {}
 
@@ -511,6 +558,7 @@
     $("home-summary").textContent = summaryText();
     $("chk-shuffle").checked = shuffleOn;
     $("chk-sound").checked = soundOn;
+    $("chk-keyboard").checked = keyboardOn;
     var wk = weakWords();
     var b = $("btn-weak");
     if (wk.length) {
@@ -529,6 +577,10 @@
     try { localStorage.setItem("spell_sound", soundOn ? "1" : "0"); } catch (e) {}
     if (soundOn) playSound(true);
   });
+  $("chk-keyboard").addEventListener("change", function(){
+    keyboardOn = this.checked;
+    try { localStorage.setItem("spell_keyboard", keyboardOn ? "1" : "0"); } catch (e) {}
+  });
   $("btn-start").addEventListener("click", function(){ startQuiz(words.slice()); });
   $("btn-weak").addEventListener("click", function(){ startQuiz(weakWords()); });
   $("btn-score").addEventListener("click", function(){ show("score"); });
@@ -538,15 +590,16 @@
   });
 
   /* ---- クイズ ---- */
+  function shuffleInPlace(a){
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+  }
   function startQuiz(list){
     if (!list.length) return;
     queue = list.slice();
-    if (shuffleOn) {
-      for (var i = queue.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var t = queue[i]; queue[i] = queue[j]; queue[j] = t;
-      }
-    }
+    if (shuffleOn) shuffleInPlace(queue);
     pos = 0; misses = [];
     show("quiz");
     ask();
@@ -557,15 +610,112 @@
     $("quiz-progress").textContent = (pos + 1) + " / " + queue.length;
     $("quiz-bar").style.width = (pos / queue.length * 100) + "%";
     $("quiz-input").value = "";
+    $("quiz-input").classList.toggle("hidden", !keyboardOn);
+    $("quiz-cards").classList.toggle("hidden", keyboardOn);
+    if (keyboardOn) { $("btn-check").disabled = false; } else { setupCards(queue[pos].w); }
     heard = false;
     setSpeakLabel();
+  }
+
+  /* ---- もじカード（タップ or ドラッグで わくに いれる） ---- */
+  var tiles = [], slotFixed = [], slotTile = [];
+  function setupCards(word){
+    tiles = []; slotFixed = []; slotTile = [];
+    norm(word).split("").forEach(function(c){
+      if (/[A-Z]/.test(c)) { tiles.push({ch: c, rot: Math.round(Math.random() * 16 - 8)}); slotFixed.push(""); }
+      else { slotFixed.push(c); } /* スペースや - は さいしょから うめておく */
+      slotTile.push(-1);
+    });
+    var orig = tiles.map(function(t){ return t.ch; }).join("");
+    for (var k = 0; k < 10; k++) {
+      shuffleInPlace(tiles);
+      if (tiles.map(function(t){ return t.ch; }).join("") !== orig) break;
+    }
+    renderCards();
+  }
+  function cardsFull(){
+    return slotFixed.every(function(f, i){ return f || slotTile[i] >= 0; });
+  }
+  function cardAnswer(){
+    return slotFixed.map(function(f, i){ return f || (slotTile[i] >= 0 ? tiles[slotTile[i]].ch : ""); }).join("");
+  }
+  function renderCards(){
+    var sb = $("card-slots"), pb = $("card-pool");
+    sb.innerHTML = ""; pb.innerHTML = "";
+    sb.classList.toggle("long", slotFixed.length >= 8);
+    slotFixed.forEach(function(f, i){
+      var d = document.createElement("div");
+      d.className = f ? "slot fixed" : "slot";
+      d.setAttribute("data-slot", i);
+      if (f) d.textContent = f;
+      else if (slotTile[i] >= 0) d.appendChild(makeTile(slotTile[i], false));
+      sb.appendChild(d);
+    });
+    tiles.forEach(function(t, ti){
+      if (slotTile.indexOf(ti) < 0) pb.appendChild(makeTile(ti, true));
+    });
+    $("btn-check").disabled = !cardsFull();
+  }
+  function makeTile(ti, inPool){
+    var el = document.createElement("div");
+    el.className = "tile";
+    el.textContent = tiles[ti].ch;
+    if (inPool) el.style.transform = "rotate(" + tiles[ti].rot + "deg)";
+    var drag = null;
+    el.addEventListener("pointerdown", function(ev){
+      if (ev.button) return;
+      ev.preventDefault();
+      drag = {x: ev.clientX, y: ev.clientY, moved: false};
+      try { el.setPointerCapture(ev.pointerId); } catch (e) {}
+    });
+    el.addEventListener("pointermove", function(ev){
+      if (!drag) return;
+      var dx = ev.clientX - drag.x, dy = ev.clientY - drag.y;
+      if (!drag.moved && dx * dx + dy * dy > 64) { drag.moved = true; el.classList.add("dragging"); }
+      if (drag.moved) el.style.transform = "translate(" + dx + "px," + dy + "px) scale(1.1)";
+    });
+    el.addEventListener("pointerup", function(ev){
+      if (!drag) return;
+      var moved = drag.moved;
+      drag = null;
+      if (!moved) { tapTile(ti); return; }
+      el.style.visibility = "hidden";
+      var under = document.elementFromPoint(ev.clientX, ev.clientY);
+      var s = under && under.closest("[data-slot]");
+      dropTile(ti, s ? Number(s.getAttribute("data-slot")) : -1);
+    });
+    el.addEventListener("pointercancel", function(){ drag = null; renderCards(); });
+    return el;
+  }
+  function tapTile(ti){
+    var from = slotTile.indexOf(ti);
+    if (from >= 0) {
+      slotTile[from] = -1;
+    } else {
+      for (var i = 0; i < slotFixed.length; i++) {
+        if (!slotFixed[i] && slotTile[i] < 0) { slotTile[i] = ti; break; }
+      }
+    }
+    renderCards();
+  }
+  function dropTile(ti, to){
+    var from = slotTile.indexOf(ti);
+    if (to < 0 || slotFixed[to]) {
+      if (from >= 0) slotTile[from] = -1; /* わくの そとに だしたら もどす */
+    } else if (to !== from) {
+      var other = slotTile[to];
+      slotTile[to] = ti;
+      if (from >= 0) slotTile[from] = other; /* わく どうしなら いれかえ */
+    }
+    renderCards();
   }
   function setSpeakLabel(){
     $("btn-speak").innerHTML = heard ? "\uD83D\uDD0A<span>もういちど きく</span>" : "\uD83D\uDD0A<span>きく（3かい）</span>";
   }
   function check(){
     var cur = queue[pos];
-    var ans = norm($("quiz-input").value);
+    if (!keyboardOn && !cardsFull()) return;
+    var ans = norm(keyboardOn ? $("quiz-input").value : cardAnswer());
     if (!ans) { speakTimes(cur.w, 1); return; }
     var correct = norm(cur.w);
     var ok = ans === correct;
