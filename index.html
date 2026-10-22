@@ -488,8 +488,11 @@
   var CARDS = [
     {e:"🐰", n:"うさぎ", r:0}, {e:"🐱", n:"ねこ", r:0}, {e:"🐹", n:"ハムスター", r:0},
     {e:"🍓", n:"いちご", r:0}, {e:"🍰", n:"ケーキ", r:0}, {e:"🎀", n:"リボン", r:0},
+    {e:"🐶", n:"いぬ", r:0}, {e:"🐥", n:"ひよこ", r:0}, {e:"🐼", n:"パンダ", r:0},
+    {e:"🍩", n:"ドーナツ", r:0}, {e:"🍭", n:"キャンディ", r:0}, {e:"🌷", n:"チューリップ", r:0},
     {e:"🦄", n:"ユニコーン", r:1}, {e:"🌈", n:"にじ", r:1}, {e:"🧁", n:"カップケーキ", r:1},
-    {e:"👸", n:"プリンセス", r:2}
+    {e:"🦋", n:"ちょうちょ", r:1}, {e:"🐬", n:"イルカ", r:1}, {e:"🦩", n:"フラミンゴ", r:1},
+    {e:"🧜‍♀️", n:"マーメイド", r:2}, {e:"👸", n:"プリンセス", r:2}
   ];
   var RARITY_NAME = ["ノーマル", "⭐ レア", "✨ キラキラ"];
   var RARITY_CLASS = ["", "rare", "kira"];
@@ -951,7 +954,7 @@
   function ownedCount(){ return CARDS.filter(function(c){ return owned[c.e]; }).length; }
   function isComplete(){ return ownedCount() === CARDS.length; }
   function drawCard(acc){
-    /* かぶりなし。キラキラは さいごの 1まいに とっておく */
+    /* かぶりなし。キラキラは さいごに とっておく */
     var fresh = CARDS.filter(function(c){ return !owned[c.e]; });
     var early = fresh.filter(function(c){ return c.r < 2; });
     if (!early.length) return fresh[Math.floor(Math.random() * fresh.length)];
