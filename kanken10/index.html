@@ -263,6 +263,19 @@
   .note { color: var(--muted); font-size: .85rem; text-align: center; margin-top: 10px; }
   .legend { color: var(--muted); font-size: .85rem; text-align: center; margin: 0 0 12px; }
   .set-title { text-align: center; font-weight: 700; margin: 14px 0 0; }
+  /* いちまるの しゅうごとの いろ */
+  .week { --wk: #c96a00; margin-top: 14px; }
+  .week.w2 { --wk: #3f8f2a; }
+  .week.w3 { --wk: #d0452c; }
+  .week.w4 { --wk: #3a74bd; }
+  .week.w5 { --wk: #c9497f; }
+  .week-head { background: var(--wk); color: #fff; font-weight: 800; text-align: center; border-radius: 12px 12px 0 0; padding: 4px; letter-spacing: .1em; }
+  .week-body { border: 3px solid var(--wk); border-top: none; border-radius: 0 0 14px 14px; padding: 10px; }
+  .week .sets { margin-top: 0; }
+  .week .set-btn { background: var(--wk); color: #fff; }
+  .week .set-btn:active { filter: brightness(.9); }
+  .week .btn-sub { margin-top: 10px; border-color: var(--wk); }
+  .kmap .week-label { grid-column: 1 / -1; color: var(--wk); font-weight: 800; border-bottom: 3px solid var(--wk); margin-top: 6px; }
   .sets { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 10px; margin-top: 8px; }
   .set-btn { padding: 10px 6px; font-size: 1.1rem; line-height: 1.3; background: var(--accent); color: var(--accent-text); }
   .set-btn:active { background: var(--accent-dark); }
@@ -351,8 +364,8 @@
   <!-- ホーム -->
   <div id="screen-home" class="card">
     <p class="summary" id="home-summary"></p>
-    <p class="set-title">▶ ステージを えらぶ（10もんずつ）</p>
-    <div class="sets" id="home-sets"></div>
+    <p class="set-title">▶ いちまるの じゅんばんで れんしゅう</p>
+    <div id="home-sets"></div>
     <button class="btn-sub hidden" id="btn-weak"></button>
     <button class="btn-big btn-mock" id="btn-mock">🏅 もぎテスト（20もん）<small style="display:block; font-size:.8rem; opacity:.9;">80てん いじょうで ごうかく！</small></button>
     <button class="btn-big btn-gacha hidden" id="btn-gacha-home"></button>
@@ -570,7 +583,15 @@
   /* よみの まちがえカード（にている ひらがな） */
   var KANA_LOOKALIKE = ["あお", "いり", "うら", "きさ", "しつ", "ぬめ", "ねれわ", "はほ", "まも", "るろ", "たな", "こに", "ゃゅょ", "がか", "じし", "ちさ"];
   var KANA_ANY = "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわん";
-  var SET_SIZE = 10;
+  /* 「いちまると はじめよう！わくわく漢検 10級」の 1しゅうめ〜5しゅうめ（カテゴリと じゅんばんは 1ねんせいの漢字 いちらんひょうの とおり）
+     しゅうを またぐ カテゴリは しゅうごとに わけて いる */
+  var WEEKS = [
+    [["かず", "一二三四五六七八九十百千"], ["よう日・とき", "日月火水"]],
+    [["よう日・とき", "木金土年"], ["大きさ", "大中小"], ["むき", "上下左右"], ["いろ", "赤白青"], ["しぜん", "雨音花"]],
+    [["しぜん", "空気山森夕石川草竹天力林"], ["生きもの", "貝犬虫"]],
+    [["人・からだ", "口耳手人足目王子女男"], ["うごき・ようす", "円休見出正生"]],
+    [["うごき・ようす", "早入立"], ["べんきょう", "学校字先文名"], ["くらし・ばしょ", "村町田"], ["もの・どうぐ", "玉糸車本"]]
+  ];
   var MOCK_SIZE = 20;
   var PASS_RATE = 0.8; /* 10きゅうの ごうかくは 80% くらい */
   var TYPE_LABEL = {yomi: "📖 よみ", kaki: "✏️ かきとり", kaku: "🔢 かくすう", e: "🖼️ えと かんじ"};
@@ -1012,10 +1033,10 @@
   $("btn-gacha-result").addEventListener("click", openGacha);
 
   /* ---- ホーム ---- */
-  function setsOf(){
-    var out = [];
-    for (var i = 0; i < KANJI.length; i += SET_SIZE) out.push(KANJI.slice(i, i + SET_SIZE));
-    return out;
+  function kanjiList(str){ return str.split("").map(kanjiOf); }
+  function weekKanji(w){ return kanjiList(WEEKS[w].map(function(c){ return c[1]; }).join("")); }
+  function bestText(key, total){
+    return (key in setBest) ? (setBest[key] === total ? "👑 " : "⭐ ") + setBest[key] + " / " + total : "まだ";
   }
   function refreshHome(){
     var c = {g: 0, y: 0, r: 0, w: 0};
@@ -1029,19 +1050,40 @@
     b.classList.toggle("hidden", !wk.length);
     var box = $("home-sets");
     box.innerHTML = "";
-    setsOf().forEach(function(list, i){
-      var key = "set" + (i + 1);
-      var btn = document.createElement("button");
-      btn.className = "set-btn";
-      btn.textContent = "ステージ" + (i + 1);
-      var ks = document.createElement("span");
-      ks.className = "kj";
-      ks.textContent = list.map(function(x){ return x.k; }).join("");
-      var best = document.createElement("small");
-      best.textContent = (key in setBest) ? (setBest[key] === list.length ? "👑 " : "⭐ ") + setBest[key] + " / " + list.length : "まだ";
-      btn.appendChild(ks); btn.appendChild(best);
-      btn.addEventListener("click", function(){ startSet(list, key); });
-      box.appendChild(btn);
+    WEEKS.forEach(function(cats, w){
+      var wk = document.createElement("div");
+      wk.className = "week w" + (w + 1);
+      var head = document.createElement("div");
+      head.className = "week-head";
+      head.textContent = (w + 1) + "しゅうめ";
+      var body = document.createElement("div");
+      body.className = "week-body";
+      var grid = document.createElement("div");
+      grid.className = "sets";
+      cats.forEach(function(cat){
+        var key = "w" + (w + 1) + ":" + cat[0];
+        var list = kanjiList(cat[1]);
+        var btn = document.createElement("button");
+        btn.className = "set-btn";
+        btn.textContent = cat[0];
+        var ks = document.createElement("span");
+        ks.className = "kj";
+        ks.textContent = cat[1];
+        var best = document.createElement("small");
+        best.textContent = bestText(key, list.length);
+        btn.appendChild(ks); btn.appendChild(best);
+        btn.addEventListener("click", function(){ startSet(list, key); });
+        grid.appendChild(btn);
+      });
+      var all = weekKanji(w);
+      var allKey = "w" + (w + 1) + ":まとめ";
+      var sum = document.createElement("button");
+      sum.className = "btn-sub";
+      sum.textContent = "📝 " + (w + 1) + "しゅうめ まとめ（" + all.length + "もん）　" + bestText(allKey, all.length);
+      sum.addEventListener("click", function(){ startSet(all, allKey); });
+      body.appendChild(grid); body.appendChild(sum);
+      wk.appendChild(head); wk.appendChild(body);
+      box.appendChild(wk);
     });
     var g = $("btn-gacha-home");
     g.textContent = "🎁 ガチャ（あと " + tickets.length + "かい）";
@@ -1151,7 +1193,19 @@
   function refreshScore(){
     var box = $("kmap");
     box.innerHTML = "";
-    KANJI.forEach(function(x){
+    var order = [];
+    WEEKS.forEach(function(cats, w){
+      order.push({week: w});
+      weekKanji(w).forEach(function(x){ order.push(x); });
+    });
+    order.forEach(function(x){
+      if (x.week !== undefined) {
+        var lb = document.createElement("div");
+        lb.className = "week-label week w" + (x.week + 1);
+        lb.textContent = (x.week + 1) + "しゅうめ";
+        box.appendChild(lb);
+        return;
+      }
       var rec = stats[x.k] || {ok: 0, ng: 0};
       var d = document.createElement("div");
       d.className = "kcell lv-" + levelOf(x.k);
