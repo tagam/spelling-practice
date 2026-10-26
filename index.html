@@ -249,18 +249,15 @@
   .score-row .w b { font-size: 1.05rem; letter-spacing: .06em; }
   .score-row .w small { display: block; color: var(--muted); font-size: .85rem; }
   .score-row .cnt { color: var(--muted); font-size: .85rem; white-space: nowrap; }
-  .list-pick { display: flex; flex-direction: column; gap: 6px; text-align: center; color: var(--muted); font-size: .95rem; }
-  .list-pick select {
-    width: 100%;
-    font-family: inherit;
-    font-size: 1.05rem;
-    font-weight: 700;
-    padding: 10px;
-    border-radius: 12px;
-    border: 2px solid var(--accent);
-    background: var(--input-bg);
-    color: var(--text);
-  }
+  .list-name { text-align: center; font-size: 1.15rem; font-weight: 800; margin: 0 0 2px; }
+  .hint { margin: 4px 0 6px; padding: 10px 12px; border-radius: 12px; background: var(--tile-bg); font-size: .95rem; }
+  .hint b { display: block; font-size: .85rem; color: var(--muted); }
+  .tip-box { border: 2px solid var(--border); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; }
+  .tip-box h3 { margin: 0 0 6px; font-size: 1.05rem; }
+  .tip-box ul { margin: 0; padding-left: 1.2em; }
+  .tip-box .tip-hint { margin: 10px 0 6px; padding: 8px 10px; border-radius: 10px; background: var(--tile-bg); font-weight: 700; }
+  .tip-box .tip-ex { margin: 6px 0 0; font-size: .9rem; }
+  .tip-box .tip-ex span { display: block; color: var(--muted); }
   .sets.single { grid-template-columns: 1fr; }
   .set-title { text-align: center; font-weight: 700; margin: 14px 0 0; }
   .sets { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-top: 8px; }
@@ -327,14 +324,12 @@
 
   <!-- ホーム -->
   <div id="screen-home" class="card">
-    <div class="list-pick">
-      <label for="sel-list">📚 れんしゅうする リスト</label>
-      <select id="sel-list"></select>
-    </div>
-    <p style="text-align:center; font-size:1.05rem; margin:10px 0 0;">たんご：<b id="home-count"></b>こ</p>
+    <p class="list-name" id="list-name"></p>
+    <p style="text-align:center; font-size:1.05rem; margin:0;">たんご：<b id="home-count"></b>こ</p>
     <p class="summary" id="home-summary"></p>
     <p class="set-title" id="set-title"></p>
     <div class="sets" id="home-sets"></div>
+    <button class="btn-sub hidden" id="btn-tips">📖 おぼえかたの コツ</button>
     <button class="btn-sub hidden" id="btn-weak"></button>
     <button class="btn-big btn-gacha hidden" id="btn-gacha-home"></button>
     <label class="row"><input type="checkbox" id="chk-shuffle"> じゅんばんを シャッフルする</label>
@@ -370,6 +365,7 @@
           <div class="meaning" id="fb-mean"></div>
           <div class="yours" id="fb-yours"></div>
         </div>
+        <div class="hint hidden" id="fb-hint"></div>
         <button class="btn-big" id="btn-next">つぎへ ▶</button>
       </div>
     </div>
@@ -398,6 +394,15 @@
       <button class="btn-big hidden" id="btn-weak2"></button>
       <button class="btn-sub" id="btn-stats-reset">きろくを ぜんぶ けす</button>
       <button class="btn-sub" id="btn-home3">ホームに もどる</button>
+    </div>
+  </div>
+
+  <!-- おぼえかたの コツ -->
+  <div id="screen-tips" class="hidden">
+    <div class="card">
+      <p style="text-align:center; font-size:1.2rem; margin:0 0 12px;">📖 おぼえかたの コツ</p>
+      <div id="tips-list"></div>
+      <button class="btn-sub" id="btn-home6">ホームに もどる</button>
     </div>
   </div>
 
@@ -470,13 +475,17 @@
     for (var i = 0; i < LISTS.length; i++) { if (LISTS[i].id === id) return LISTS[i]; }
     return null;
   }
+  /* いつも いちばん あたらしい リスト。おとなが かえる ときは URL に ?list=ID */
   var startListId = LISTS[0].id;
-  try {
-    var picked = localStorage.getItem("spell_list");
-    /* あたらしい リストが ふえたら そちらを ひらく */
-    if (localStorage.getItem("spell_list_newest") === LISTS[0].id && picked && listById(picked)) startListId = picked;
-    localStorage.setItem("spell_list_newest", LISTS[0].id);
-  } catch (e) {}
+  var qm = /[?&]list=([^&#]+)/.exec(location.search);
+  if (qm && listById(decodeURIComponent(qm[1]))) startListId = decodeURIComponent(qm[1]);
+  function groupOf(w){
+    var k = norm(w), gs = list.groups || [];
+    for (var i = 0; i < gs.length; i++) {
+      for (var j = 0; j < gs[i].words.length; j++) { if (norm(gs[i].words[j].w) === k) return gs[i]; }
+    }
+    return null;
+  }
   function shown(w){ return list.lower ? norm(w).toLowerCase() : norm(w); }
 
   var shuffleOn = false, keyboardOn = false, savedVoiceURI = "", voicePicked = false;
@@ -519,7 +528,7 @@
   }
   function useList(id){
     list = listById(id) || LISTS[0];
-    words = list.words.slice();
+    words = list.groups ? [].concat.apply([], list.groups.map(function(g){ return g.words; })) : list.words.slice();
     CARDS = list.cards || [];
     SET_SIZE = list.setSize || 10;
     if (!Array.isArray(ticketsAll[list.id])) ticketsAll[list.id] = [];
@@ -556,12 +565,13 @@
   var heard = false;
 
   var $ = function(id){ return document.getElementById(id); };
-  var screens = ["home","quiz","result","score","gacha","zukan"];
+  var screens = ["home","quiz","result","score","tips","gacha","zukan"];
   function show(name){
     screens.forEach(function(s){ $("screen-"+s).classList.toggle("hidden", s !== name); });
     if (name === "home") refreshHome();
     if (name === "score") refreshScore();
     if (name === "zukan") refreshZukan();
+    if (name === "tips") refreshTips();
   }
 
   /* ---- 読み上げ ---- */
@@ -649,17 +659,8 @@
     return "🟢 " + c["🟢"] + "　🟡 " + c["🟡"] + "　🔴 " + c["🔴"] + "　⚪ " + c["⚪"];
   }
   function refreshHome(){
-    var sl = $("sel-list");
-    if (sl.options.length !== LISTS.length) {
-      sl.innerHTML = "";
-      LISTS.forEach(function(l){
-        var o = document.createElement("option");
-        o.value = l.id;
-        o.textContent = l.name;
-        sl.appendChild(o);
-      });
-    }
-    sl.value = list.id;
+    $("list-name").textContent = "📚 " + list.name;
+    $("btn-tips").classList.toggle("hidden", !list.groups);
     $("set-title").textContent = SET_SIZE >= words.length ? "▶ はじめる（" + words.length + "もん）" : "▶ セットを えらんで はじめる（" + SET_SIZE + "もんずつ）";
     $("home-count").textContent = words.length;
     $("home-summary").textContent = summaryText();
@@ -702,11 +703,7 @@
     return out;
   }
   function setKey(list){ return list.map(function(x){ return norm(x.w); }).join(","); }
-  $("sel-list").addEventListener("change", function(){
-    try { localStorage.setItem("spell_list", this.value); } catch (e) {}
-    useList(this.value);
-    refreshHome();
-  });
+  $("btn-tips").addEventListener("click", function(){ show("tips"); });
   $("chk-shuffle").addEventListener("change", function(){
     shuffleOn = this.checked;
     try { localStorage.setItem("spell_shuffle", shuffleOn ? "1" : "0"); } catch (e) {}
@@ -869,6 +866,14 @@
     $("fb-word").textContent = shown(cur.w);
     $("fb-mean").textContent = cur.m || "";
     $("fb-yours").textContent = ok ? "" : "きみの こたえ： " + (list.lower ? ans.toLowerCase() : ans);
+    var g = groupOf(cur.w);
+    var hb = $("fb-hint");
+    hb.innerHTML = "";
+    if (g && g.hint) {
+      var hl = document.createElement("b"); hl.textContent = "💡 " + g.title;
+      hb.appendChild(hl); hb.appendChild(document.createTextNode(g.hint));
+    }
+    hb.classList.toggle("hidden", !(g && g.hint));
     $("quiz-bar").style.width = ((pos + 1) / queue.length * 100) + "%";
     $("btn-next").focus();
   }
@@ -921,6 +926,29 @@
   $("btn-retry-miss").addEventListener("click", function(){ startQuiz(misses.slice()); });
   $("btn-home1").addEventListener("click", function(){ show("home"); });
   $("btn-gacha-result").addEventListener("click", openGacha);
+
+  /* ---- おぼえかたの コツ ---- */
+  function refreshTips(){
+    var box = $("tips-list");
+    box.innerHTML = "";
+    (list.groups || []).forEach(function(g){
+      var d = document.createElement("div"); d.className = "tip-box";
+      var h = document.createElement("h3"); h.textContent = g.title; d.appendChild(h);
+      var ul = document.createElement("ul");
+      g.words.forEach(function(x){
+        var li = document.createElement("li"); li.textContent = shown(x.w) + " = " + x.m; ul.appendChild(li);
+      });
+      d.appendChild(ul);
+      if (g.hint) { var hn = document.createElement("p"); hn.className = "tip-hint"; hn.textContent = "💡 " + g.hint; d.appendChild(hn); }
+      (g.examples || []).forEach(function(ex){
+        var p = document.createElement("p"); p.className = "tip-ex"; p.textContent = ex.en;
+        var ja = document.createElement("span"); ja.textContent = "→ " + ex.ja; p.appendChild(ja);
+        d.appendChild(p);
+      });
+      box.appendChild(d);
+    });
+  }
+  $("btn-home6").addEventListener("click", function(){ show("home"); });
 
   /* ---- ガチャ ---- */
   var spinning = false;

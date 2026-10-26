@@ -1,6 +1,7 @@
 /* たんごリスト。まいしゅう あたらしい リストを いちばん うえに たす。
-   いちばん うえの リストが アプリを ひらいた ときに えらばれる。
+   アプリは いちばん うえの リストを つかう（URL に ?list=ID を つけると ほかの リスト）。
    lower: true なら こもじで れんしゅう。setSize: 1かいの もんだいの かず。
+   words の かわりに groups（title・words・hint・examples）を かくと、カテゴリの じゅんばんで だして コツも でる。
    cards: その リストの ガチャで あつめる カード（r: 0=ノーマル 1=レア 2=キラキラ。キラキラは さいごに でる） */
 var SPELL_LISTS = [
   {
@@ -8,22 +9,71 @@ var SPELL_LISTS = [
     name: "10/27（か）の テスト",
     lower: true,
     setSize: 15,
-    words: [
-      {w:"salt water", m:"しおみず 🌊"},
-      {w:"fresh water", m:"まみず（しおからくない みず） 💧"},
-      {w:"drinking", m:"のむ こと 🥤"},
-      {w:"cooking", m:"りょうり する こと 🍳"},
-      {w:"rotation", m:"じてん（ちきゅうが じぶんで まわる こと） 🌍"},
-      {w:"revolution", m:"こうてん（たいようの まわりを まわる こと） ☀️"},
-      {w:"spring", m:"はる 🌸"},
-      {w:"colder", m:"もっと さむい 🥶"},
-      {w:"autumn", m:"あき 🍁"},
-      {w:"winter", m:"ふゆ ⛄"},
-      {w:"summer", m:"なつ 🏖️"},
-      {w:"longer", m:"もっと ながい 📏"},
-      {w:"shorter", m:"もっと みじかい ✂️"},
-      {w:"clouds", m:"くも ☁️"},
-      {w:"stars", m:"ほし ⭐"}
+    /* カテゴリ（groups）が あれば その じゅんばんで だす。hint は こたえの あとに でる コツ */
+    groups: [
+      {
+        title: "きせつの ことば",
+        words: [
+          {w:"spring", m:"はる（はなが さく きせつ） 🌸"},
+          {w:"summer", m:"なつ（あつい きせつ） 🏖️"},
+          {w:"autumn", m:"あき（はっぱが おちる きせつ） 🍁"},
+          {w:"winter", m:"ふゆ（さむい きせつ） ⛄"}
+        ],
+        hint: "はる、なつ、あき、ふゆ、きせつは 4つ！",
+        examples: [
+          {en:"Spring, summer, autumn, winter — four seasons!", ja:"はる、なつ、あき、ふゆ、きせつは 4つ！（spring・summer・autumn・winter）"}
+        ]
+      },
+      {
+        title: "そらの ことば",
+        words: [
+          {w:"stars", m:"ほし（よるの そらで ひかる もの） ⭐"},
+          {w:"clouds", m:"くも（そらに うかぶ しろい もの） ☁️"}
+        ],
+        hint: "そらに ほしと くもが みえるよ",
+        examples: [
+          {en:"I see stars and clouds in the sky.", ja:"そらに ほしと くもが みえるよ（stars・clouds）"}
+        ]
+      },
+      {
+        title: "みずの ことば",
+        words: [
+          {w:"drinking", m:"のむこと（みずや ジュースを のむ こと） 🥤"},
+          {w:"cooking", m:"りょうりすること（ごはんを つくる こと） 🍳"},
+          {w:"salt water", m:"しおみず（うみの しょっぱい みず） 🌊"},
+          {w:"fresh water", m:"まみず（しょっぱくない のめる みず） 💧"}
+        ],
+        hint: "うみの みずは salt water、のめる みずは fresh water",
+        examples: [
+          {en:"The ocean is salt water.", ja:"うみは しおみずだよ（salt water）"},
+          {en:"We use fresh water for drinking and cooking.", ja:"のむのも りょうりも まみずを つかうよ（fresh water・drinking・cooking）"}
+        ]
+      },
+      {
+        title: "くらべる ことば",
+        words: [
+          {w:"colder", m:"もっと さむい（〜より さむい こと） 🥶"},
+          {w:"longer", m:"もっと ながい（〜より ながい こと） 📏"},
+          {w:"shorter", m:"もっと みじかい（〜より みじかい こと） ✂️"}
+        ],
+        hint: "うしろに er が つくと「もっと〜」。longer ⇔ shorter は はんたい",
+        examples: [
+          {en:"Winter is colder than summer.", ja:"ふゆは なつより さむいよ（colder）"},
+          {en:"In summer, days are longer. In winter, days are shorter.", ja:"なつは ひるが ながくて、ふゆは みじかいよ（longer・shorter）"}
+        ]
+      },
+      {
+        title: "ちきゅうの うごき",
+        words: [
+          {w:"rotation", m:"じてん（ちきゅうが じぶんで くるくる まわる こと） 🌍"},
+          {w:"revolution", m:"こうてん（ちきゅうが たいようの まわりを まわる こと） ☀️"}
+        ],
+        hint: "rotation は 1にちで 1かい、revolution は 1ねんで 1かい",
+        examples: [
+          {en:"Rotation makes day and night.", ja:"じてんで ひると よるが できるよ（rotation）"},
+          {en:"Revolution makes the seasons.", ja:"こうてんで きせつが できるよ（revolution）"}
+        ]
+      }
     ],
     cards: [
       {e:"🐶", n:"いぬ", r:0}, {e:"🐼", n:"パンダ", r:0}, {e:"🍭", n:"キャンディ", r:0},
