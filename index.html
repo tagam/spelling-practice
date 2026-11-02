@@ -26,6 +26,9 @@
     --pink: #ff8fb8;
     --pink-dark: #e0608f;
     --pink-text: #ffffff;
+    --rare: #3fa7f5;
+    --rare-soft: #e6f4ff;
+    --gold: #e6b422;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -47,6 +50,9 @@
       --pink: #ff8fb8;
       --pink-dark: #ff6fa3;
       --pink-text: #3a0d1f;
+      --rare: #6cc0ff;
+      --rare-soft: #183449;
+      --gold: #f2c94c;
     }
   }
   :root[data-theme="dark"] {
@@ -68,6 +74,9 @@
     --pink: #ff8fb8;
     --pink-dark: #ff6fa3;
     --pink-text: #3a0d1f;
+    --rare: #6cc0ff;
+    --rare-soft: #183449;
+    --gold: #f2c94c;
   }
   html { scroll-padding-top: env(safe-area-inset-top, 0px); }
   * { box-sizing: border-box; }
@@ -301,9 +310,15 @@
     background: linear-gradient(to bottom, var(--pink) 0 50%, var(--card) 50% 100%);
   }
   .capsule::after { content: ""; position: absolute; left: -4px; right: -4px; top: calc(50% - 4px); height: 8px; background: var(--pink-dark); }
+  /* カプセルの いろで レア（みずいろ）・キラキラ（きんいろ）を さきに しらせる */
+  .capsule.cap-rare { border-color: var(--rare); background: linear-gradient(to bottom, var(--rare) 0 50%, var(--card) 50% 100%); }
+  .capsule.cap-rare::after { background: var(--rare); }
+  .capsule.cap-kira { border-color: var(--gold); background: linear-gradient(to bottom, #ffd54a 0 50%, #fff6c2 50% 100%); box-shadow: 0 0 26px #ffd54a; }
+  .capsule.cap-kira::after { background: var(--gold); }
   .capsule.shake { animation: shake .25s ease-in-out 5; }
   @keyframes shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-14deg); } 75% { transform: rotate(14deg); } }
   .prize {
+    position: relative;
     width: 210px;
     border: 4px solid var(--border);
     border-radius: 20px;
@@ -316,26 +331,60 @@
   .prize .nm { font-size: 1.4rem; font-weight: 800; }
   .prize .rr { font-size: .95rem; color: var(--muted); font-weight: 700; }
   .prize .nw { font-weight: 800; color: var(--pink-dark); min-height: 1.6em; }
-  .prize.rare { border-color: var(--pink); }
+  .prize.rare, .zcell.rare { border-color: var(--rare); background: var(--rare-soft); }
   .prize.kira, .zcell.kira {
-    border-color: #e6b422;
+    border-color: var(--gold);
     background: linear-gradient(135deg, #fff7cc, #ffd9ef, #d9ecff, #fff7cc);
     background-size: 300% 300%;
   }
+  .prize.kira { border-width: 5px; }
+  /* レア・キラキラの ふだ */
+  .badge {
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: .75rem;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+  .badge.rare { background: var(--rare); color: #ffffff; }
+  .badge.kira { background: var(--gold); color: #3d2f1e; }
+  .zcell .badge { top: -9px; font-size: .62rem; padding: 0 6px; }
+  /* キラキラだけ ひかりの すじが ながれて ✨ が またたく */
+  .prize.kira::before, .zcell.kira:not(.none)::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,.9) 48%, transparent 62%);
+    background-size: 250% 100%;
+    animation: shine 2.2s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes shine { from { background-position: 150% 0; } to { background-position: -100% 0; } }
+  .spark { position: absolute; font-size: 1.3rem; animation: twinkle 1.4s ease-in-out infinite; pointer-events: none; }
+  .prize:not(.kira) .spark { display: none; }
+  .spark.s1 { top: 10px; left: 10px; }
+  .spark.s2 { top: 44%; right: 8px; animation-delay: .5s; }
+  .spark.s3 { bottom: 12px; left: 22px; animation-delay: .9s; }
+  @keyframes twinkle { 0%, 100% { opacity: .2; transform: scale(.6); } 50% { opacity: 1; transform: scale(1.15); } }
   .prize.kira { animation: pop .45s ease-out, shimmer 3s linear infinite; }
   .prize.kira .nm, .prize.kira .rr, .zcell.kira .nm, .zcell.kira .ct { color: #3d2f1e; }
   @keyframes pop { from { transform: scale(.3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   @keyframes shimmer { to { background-position: 300% 300%; } }
-  .zukan { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 8px; margin-bottom: 6px; }
-  .zcell { min-width: 0; border: 3px solid var(--border); border-radius: 14px; padding: 6px 2px; text-align: center; }
+  .zukan { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 16px 8px; margin: 14px 0 6px; }
+  .zcell { position: relative; min-width: 0; border: 3px solid var(--border); border-radius: 14px; padding: 6px 2px; text-align: center; }
   .zcell .em { font-size: 2.2rem; line-height: 1.25; }
   .zcell .nm { font-size: .7rem; font-weight: 700; overflow-wrap: anywhere; }
   .zcell .ct { font-size: .7rem; color: var(--muted); min-height: 1.2em; }
-  .zcell.rare { border-color: var(--pink); }
   .zcell.none { background: transparent; border-style: dashed; }
   .zcell.none .em, .zcell.none .nm { color: var(--muted); }
   @media (prefers-reduced-motion: reduce) {
-    .capsule.shake, .prize, .prize.kira { animation: none; }
+    .capsule.shake, .prize, .prize.kira, .spark { animation: none; }
+    .prize.kira::before, .zcell.kira:not(.none)::before { animation: none; background: none; }
   }
   .hidden { display: none; }
 </style>
@@ -448,6 +497,8 @@
       <div class="gacha-stage">
         <div class="capsule" id="gacha-capsule"></div>
         <div class="prize hidden" id="gacha-prize">
+          <span class="badge hidden" id="prize-badge"></span>
+          <span class="spark s1">✨</span><span class="spark s2">✨</span><span class="spark s3">✨</span>
           <div class="em" id="prize-em"></div>
           <div class="nm" id="prize-nm"></div>
           <div class="rr" id="prize-rr"></div>
@@ -481,6 +532,8 @@
   /* ---- ガチャの カード（r: 0=ノーマル 1=レア 2=キラキラ）は lists.js に リストごとに ある ---- */
   var RARITY_NAME = ["ノーマル", "⭐ レア", "✨ キラキラ"];
   var RARITY_CLASS = ["", "rare", "kira"];
+  var RARITY_BADGE = ["", "⭐ レア", "✨ キラキラ"];
+  var CAPSULE_CLASS = ["", "cap-rare", "cap-kira"];
 
   /* ---- ⭕❌のこえ（英語でほめる・はげます） ---- */
   var soundOn = true;
@@ -1106,7 +1159,7 @@
   }
   function openGacha(){
     show("gacha");
-    $("gacha-capsule").classList.remove("hidden", "shake");
+    $("gacha-capsule").className = "capsule";
     $("gacha-prize").classList.add("hidden");
     $("btn-spin").textContent = "まわす！";
     updateGacha();
@@ -1130,7 +1183,7 @@
     saveGacha();
     var cap = $("gacha-capsule");
     $("gacha-prize").classList.add("hidden");
-    cap.classList.remove("hidden", "shake");
+    cap.className = "capsule " + CAPSULE_CLASS[c.r];
     void cap.offsetWidth;
     cap.classList.add("shake");
     var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1138,6 +1191,9 @@
       cap.classList.add("hidden");
       var pz = $("gacha-prize");
       pz.className = "prize " + RARITY_CLASS[c.r];
+      var bd = $("prize-badge");
+      bd.className = "badge " + RARITY_CLASS[c.r] + (c.r ? "" : " hidden");
+      bd.textContent = RARITY_BADGE[c.r];
       $("prize-em").textContent = c.e;
       $("prize-nm").textContent = c.n;
       $("prize-rr").textContent = RARITY_NAME[c.r];
@@ -1164,6 +1220,7 @@
       var em = document.createElement("div"); em.className = "em"; em.textContent = n ? c.e : "？";
       var nm = document.createElement("div"); nm.className = "nm"; nm.textContent = n ? c.n : "？？？";
       var ct = document.createElement("div"); ct.className = "ct"; ct.textContent = n > 1 ? "×" + n : "";
+      if (c.r) { var bd = document.createElement("span"); bd.className = "badge " + RARITY_CLASS[c.r]; bd.textContent = RARITY_BADGE[c.r]; d.appendChild(bd); }
       d.appendChild(em); d.appendChild(nm); d.appendChild(ct);
       box.appendChild(d);
     });
