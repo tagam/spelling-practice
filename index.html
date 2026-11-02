@@ -233,7 +233,8 @@
     color: var(--text);
     max-width: 230px;
   }
-  .summary { text-align: center; font-size: 1.05rem; margin: 4px 0 0; }
+  .summary { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 14px; font-size: 1.05rem; margin: 4px 0 0; }
+  .summary span { white-space: nowrap; }
   .note { color: var(--muted); font-size: .85rem; text-align: center; margin-top: 10px; }
   .legend { color: var(--muted); font-size: .85rem; text-align: center; margin: 0 0 12px; }
   .score-row {
@@ -389,7 +390,7 @@
   <div id="screen-score" class="hidden">
     <div class="card">
       <p style="text-align:center; font-size:1.2rem; margin:0 0 6px;">📊 せいせき</p>
-      <p class="legend">🟢 2かい れんぞく せいかい　🟡 あと 1かい！<br>🔴 このまえ まちがえた　⚪ まだ やってない</p>
+      <p class="legend">🟢 おぼえた　🔴 まちがえた　⚪️ まだ</p>
       <div id="score-list"></div>
       <button class="btn-big hidden" id="btn-weak2"></button>
       <button class="btn-sub" id="btn-stats-reset">きろくを ぜんぶ けす</button>
@@ -549,15 +550,12 @@
   }
   function levelOf(w){
     var r = stats[norm(w)];
-    if (!r || (r.ok + r.ng) === 0) return "⚪";
-    if (r.st === 0) return "🔴";
-    if (r.st === 1) return "🟡";
-    return "🟢";
+    if (!r || (r.ok + r.ng) === 0) return "⚪️";
+    return r.st === 0 ? "🔴" : "🟢"; /* さいごに こたえた ときの けっか */
   }
   function weakWords(){
     return words.filter(function(x){
-      var lv = levelOf(x.w);
-      return lv === "🔴" || lv === "🟡";
+      return levelOf(x.w) === "🔴"; /* このまえ まちがえた たんごだけ */
     });
   }
 
@@ -654,23 +652,27 @@
 
   /* ---- ホーム ---- */
   function summaryText(){
-    var c = {"🟢":0, "🟡":0, "🔴":0, "⚪":0};
+    var c = {"🟢":0, "🔴":0, "⚪️":0};
     words.forEach(function(x){ c[levelOf(x.w)]++; });
-    return "🟢 " + c["🟢"] + "　🟡 " + c["🟡"] + "　🔴 " + c["🔴"] + "　⚪ " + c["⚪"];
+    return ["🟢 おぼえた " + c["🟢"], "🔴 まちがえた " + c["🔴"], "⚪️ まだ " + c["⚪️"]];
   }
   function refreshHome(){
     $("list-name").textContent = "📚 " + list.name;
     $("btn-tips").classList.toggle("hidden", !list.groups);
     $("set-title").textContent = SET_SIZE >= words.length ? "▶ はじめる（" + words.length + "もん）" : "▶ セットを えらんで はじめる（" + SET_SIZE + "もんずつ）";
     $("home-count").textContent = words.length;
-    $("home-summary").textContent = summaryText();
+    var sm = $("home-summary");
+    sm.innerHTML = "";
+    summaryText().forEach(function(t){ /* ラベルと かずが べつの ぎょうに わかれないように */
+      var sp = document.createElement("span"); sp.textContent = t; sm.appendChild(sp);
+    });
     $("chk-shuffle").checked = shuffleOn;
     $("chk-sound").checked = soundOn;
     $("chk-keyboard").checked = keyboardOn;
     var wk = weakWords();
     var b = $("btn-weak");
     if (wk.length) {
-      b.textContent = "💪 にがてな " + wk.length + "こだけ れんしゅう（🔴🟡）";
+      b.textContent = "✏️ まちがえた もんだいだけ れんしゅう（" + wk.length + "こ）";
       b.classList.remove("hidden");
     } else {
       b.classList.add("hidden");
@@ -1041,7 +1043,7 @@
 
   /* ---- せいせき ---- */
   function refreshScore(){
-    var order = {"🔴": 0, "🟡": 1, "⚪": 2, "🟢": 3};
+    var order = {"🔴": 0, "⚪️": 1, "🟢": 2};
     var rows = words.map(function(x, idx){ return {x: x, lv: levelOf(x.w), idx: idx}; });
     rows.sort(function(a, b){ return (order[a.lv] - order[b.lv]) || (a.idx - b.idx); });
     var box = $("score-list");
@@ -1063,7 +1065,7 @@
     var wk = weakWords();
     var b2 = $("btn-weak2");
     if (wk.length) {
-      b2.textContent = "💪 にがてな " + wk.length + "こだけ れんしゅう";
+      b2.textContent = "✏️ まちがえた もんだいだけ れんしゅう（" + wk.length + "こ）";
       b2.classList.remove("hidden");
     } else {
       b2.classList.add("hidden");
