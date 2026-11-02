@@ -5,6 +5,82 @@
    cards: その リストの ガチャで あつめる カード（r: 0=ノーマル 1=レア 2=キラキラ。キラキラは さいごに でる） */
 var SPELL_LISTS = [
   {
+    id: "2026-11-06",
+    name: "11/6（きん）の テスト",
+    lower: true,
+    setSize: 15,
+    groups: [
+      {
+        title: "てんきの ことば",
+        words: [
+          {w:"windy", m:"かぜが つよい（びゅうびゅう かぜが ふく てんき） 🌬️"},
+          {w:"cloudy", m:"くもりの（くもが いっぱいの てんき） ☁️"},
+          {w:"rainy", m:"あめの（あめが ふる てんき） ☔"},
+          {w:"moving", m:"うごいている（じっと していない こと） 🏃"}
+        ],
+        hint: "wind・cloud・rain の うしろに y を つけると てんきの ことば",
+        examples: [
+          {en:"It is windy, cloudy and rainy today.", ja:"きょうは かぜが つよくて、くもりで、あめだよ（windy・cloudy・rainy）"},
+          {en:"The clouds are moving.", ja:"くもが うごいているよ（moving）"}
+        ]
+      },
+      {
+        title: "にわの ことば",
+        words: [
+          {w:"garden", m:"にわ（はなや やさいを そだてる ところ） 🏡"},
+          {w:"pretty", m:"かわいい・きれい（みると うれしくなる かんじ） 🌷"},
+          {w:"behind", m:"〜の うしろに（みえない ほうに ある こと） 🙈"}
+        ],
+        hint: "にわの きの うしろに きれいな はなが あるよ",
+        examples: [
+          {en:"The pretty flowers are behind the tree in the garden.", ja:"にわの きの うしろに きれいな はなが あるよ（pretty・behind・garden）"}
+        ]
+      },
+      {
+        title: "たべものの ことば",
+        words: [
+          {w:"unripe", m:"まだ じゅくしていない（まだ たべごろじゃない こと） 🥭"},
+          {w:"chutney", m:"チャツネ（くだものや やさいで つくる ソース） 🫙"}
+        ],
+        hint: "un が つくと はんたい。ripe（じゅくした）→ unripe（まだ じゅくしていない）",
+        examples: [
+          {en:"Unripe mangoes make chutney.", ja:"まだ じゅくしていない マンゴーで チャツネを つくるよ（unripe・chutney）"}
+        ]
+      },
+      {
+        title: "なかよしの ことば",
+        words: [
+          {w:"something", m:"なにか（なにかは わからない もの） ❓"},
+          {w:"gift", m:"プレゼント（だれかに あげる もの） 🎁"},
+          {w:"share", m:"わけあう（みんなで いっしょに つかう こと） 🤝"},
+          {w:"smile", m:"えがお・ほほえむ（にっこり わらう こと） 😊"}
+        ],
+        hint: "きみに なにか あるよ、プレゼントだよ！ わけあって にっこりしよう",
+        examples: [
+          {en:"I have something for you. It is a gift!", ja:"きみに なにか あるよ。プレゼントだよ！（something・gift）"},
+          {en:"Let's share and smile.", ja:"わけあって にっこりしよう（share・smile）"}
+        ]
+      },
+      {
+        title: "ちがいの ことば",
+        words: [
+          {w:"different", m:"ちがう（おなじじゃない こと） 🔀"},
+          {w:"separate", m:"わける・べつべつの（いっしょに しない こと） ✂️"}
+        ],
+        hint: "separate の まんなかには a rat（ねずみ）が かくれてる：sep-a-rat-e。different は f が 2つ",
+        examples: [
+          {en:"These two cups are different. Let's separate them.", ja:"この 2つの コップは ちがうね。べつべつに しよう（different・separate）"}
+        ]
+      }
+    ],
+    cards: [
+      {e:"🐼", n:"パンダ", r:0}, {e:"🐥", n:"ひよこ", r:0}, {e:"🍩", n:"ドーナツ", r:0},
+      {e:"🌷", n:"チューリップ", r:0}, {e:"🧸", n:"くまさん", r:0},
+      {e:"🐬", n:"イルカ", r:1}, {e:"🐧", n:"ペンギン", r:1},
+      {e:"🧚", n:"ようせい", r:2}
+    ]
+  },
+  {
     id: "2026-10-27",
     name: "10/27（か）の テスト",
     lower: true,
