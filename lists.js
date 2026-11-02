@@ -3,6 +3,7 @@
    lower: true なら こもじで れんしゅう。setSize: 1かいの もんだいの かず。
    words の かわりに groups（title・words・hint・examples）を かくと、カテゴリの じゅんばんで だして コツも でる。
    order（たんごの ならび）を かくと、もんだいは その じゅんばんで でる。
+   stampDays を かくと「きょうの れんしゅう」と スタンプカードに なる（キラキラは スタンプ コンプリートまで でない）。
    cards: その リストの ガチャで あつめる カード（r: 0=ノーマル 1=レア 2=キラキラ。キラキラは さいごに でる） */
 var SPELL_LISTS = [
   {
@@ -10,6 +11,7 @@ var SPELL_LISTS = [
     name: "11/6（きん）の テスト",
     lower: true,
     setSize: 15,
+    stampDays: 4,  /* れんしゅうする ひの かず（スタンプの かず）。ぜんぶ たまると キラキラが でる */
     /* もんだいの じゅんばん（スプレッドシートの ひょうと おなじ）。なければ groups の じゅんばん */
     order: ["rainy", "windy", "cloudy", "garden", "smile", "gift", "share", "pretty",
             "something", "behind", "moving", "different", "separate", "unripe", "chutney"],

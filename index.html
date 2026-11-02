@@ -260,6 +260,28 @@
   .tip-box .tip-ex { margin: 6px 0 0; font-size: .9rem; }
   .tip-box .tip-ex span { display: block; color: var(--muted); }
   .sets.single { grid-template-columns: 1fr; }
+  .stamps { display: flex; justify-content: center; gap: 6px; margin: 10px 0 2px; }
+  .stamp {
+    flex: 1 1 0;
+    max-width: 64px;
+    min-width: 0;
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 4px 2px;
+    text-align: center;
+    font-size: .72rem;
+    color: var(--muted);
+    line-height: 1.3;
+  }
+  .stamp .mk { display: block; font-size: 1.6rem; line-height: 1.3; }
+  .stamp { font-weight: 700; }
+  .stamp.done { border-style: solid; border-color: var(--pink); color: var(--text); }
+  .stamp.goal { border-style: solid; background: var(--tile-bg); color: var(--text); }
+  .stamp-msg { text-align: center; font-weight: 700; color: var(--pink-dark); margin: 4px 0 0; font-size: .95rem; }
+  .mini-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+  .mini-btns .btn-sub { margin-top: 0; padding: 8px 2px; font-size: .9rem; line-height: 1.4; white-space: pre-line; }
+  .adult { margin-top: 18px; border-top: 1px solid var(--border); padding-top: 8px; }
+  .adult summary { text-align: center; color: var(--muted); font-size: .85rem; cursor: pointer; }
   .set-title { text-align: center; font-weight: 700; margin: 14px 0 0; }
   .sets { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-top: 8px; }
   .set-btn { padding: 12px 6px; font-size: 1.1rem; line-height: 1.3; background: var(--accent); color: var(--accent-text); }
@@ -326,22 +348,32 @@
   <!-- ホーム -->
   <div id="screen-home" class="card">
     <p class="list-name" id="list-name"></p>
-    <p style="text-align:center; font-size:1.05rem; margin:0;">たんご：<b id="home-count"></b>こ</p>
+    <div class="stamps hidden" id="stamps"></div>
+    <p class="stamp-msg hidden" id="stamp-msg"></p>
+    <button class="btn-big hidden" id="btn-today"></button>
     <p class="summary" id="home-summary"></p>
     <p class="set-title" id="set-title"></p>
     <div class="sets" id="home-sets"></div>
-    <button class="btn-sub hidden" id="btn-tips">📖 おぼえかたの コツ</button>
     <button class="btn-sub hidden" id="btn-weak"></button>
     <button class="btn-big btn-gacha hidden" id="btn-gacha-home"></button>
-    <label class="row"><input type="checkbox" id="chk-shuffle"> じゅんばんを シャッフルする</label>
-    <label class="row"><input type="checkbox" id="chk-keyboard"> ⌨️ カードではなく キーボードで かく</label>
-    <label class="row"><input type="checkbox" id="chk-sound"> 🔔 ⭕❌の こえを だす（Good job! など）</label>
-    <label class="row">🗣️ こえ
-      <select id="sel-voice"><option value="">じどうで えらぶ</option></select>
-    </label>
-    <button class="btn-sub" id="btn-score">📊 せいせきを みる</button>
-    <button class="btn-sub" id="btn-zukan">🎀 カードずかん</button>
-    <p class="note">🔊ボタンで 3かい よみあげます（ほんばんと おなじ）</p>
+    <div class="mini-btns">
+      <button class="btn-sub" id="btn-tips">📖
+コツ</button>
+      <button class="btn-sub" id="btn-score">📊
+せいせき</button>
+      <button class="btn-sub" id="btn-zukan">🎀
+ずかん</button>
+    </div>
+    <details class="adult">
+      <summary>⚙️ おとなの せってい</summary>
+      <label class="row"><input type="checkbox" id="chk-shuffle"> じゅんばんを シャッフルする</label>
+      <label class="row"><input type="checkbox" id="chk-keyboard"> ⌨️ カードではなく キーボードで かく</label>
+      <label class="row"><input type="checkbox" id="chk-sound"> 🔔 ⭕❌の こえを だす（Good job! など）</label>
+      <label class="row">🗣️ こえ
+        <select id="sel-voice"><option value="">じどうで えらぶ</option></select>
+      </label>
+      <p class="note">🔊ボタンで 3かい よみあげます（ほんばんと おなじ）</p>
+    </details>
   </div>
 
   <!-- クイズ -->
@@ -380,6 +412,8 @@
       <div class="result-score" id="result-score"></div>
       <div id="result-msg" style="text-align:center; font-size:1.3rem;"></div>
       <div class="miss-list" id="result-miss"></div>
+      <p class="stamp-msg hidden" id="result-stamp"></p>
+      <button class="btn-big hidden" id="btn-next-step"></button>
       <button class="btn-big btn-gacha" id="btn-gacha-result">🎁 ガチャを まわす！</button>
       <button class="btn-sub hidden" id="btn-retry-miss">❌ まちがえたのだけ もういちど</button>
       <button class="btn-sub" id="btn-home1">ホームに もどる</button>
@@ -527,6 +561,28 @@
       localStorage.setItem("spell_cards_v2", JSON.stringify(ownedAll));
     } catch (e) {}
   }
+  /* ---- まいにちの スタンプ（リストごと・ひづけごと） ---- */
+  var daily = {};
+  try {
+    var dl0 = JSON.parse(localStorage.getItem("spell_daily") || "{}");
+    if (dl0 && typeof dl0 === "object") daily = dl0;
+  } catch (e) {}
+  function saveDaily(){ try { localStorage.setItem("spell_daily", JSON.stringify(daily)); } catch (e) {} }
+  function todayKey(){
+    var d = new Date();
+    return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+  }
+  function dayRec(){
+    var L = daily[list.id] || (daily[list.id] = {});
+    return L[todayKey()] || (L[todayKey()] = {run: false, retries: 0, done: false});
+  }
+  /* スタンプは れんしゅうを おえた ひの かず（やすんだ ひが あっても あとから ためられる） */
+  function stampCount(){
+    var L = daily[list.id] || {}, n = 0;
+    for (var k in L) { if (L[k] && L[k].done) n++; }
+    return Math.min(n, list.stampDays || 0);
+  }
+  function stampsComplete(){ return !!list.stampDays && stampCount() >= list.stampDays; }
   function useList(id){
     list = listById(id) || LISTS[0];
     words = list.groups ? [].concat.apply([], list.groups.map(function(g){ return g.words; })) : list.words.slice();
@@ -565,6 +621,7 @@
   }
 
   var queue = [], pos = 0, misses = [], currentSetKey = null;
+  var quizMode = "free"; /* run: きょうの 15もん / retry: きょうの やりなおし / extra: もう1かい / free: それいがい */
   var heard = false;
 
   var $ = function(id){ return document.getElementById(id); };
@@ -663,9 +720,12 @@
   }
   function refreshHome(){
     $("list-name").textContent = "📚 " + list.name;
+    var dailyMode = !!list.stampDays;
     $("btn-tips").classList.toggle("hidden", !list.groups);
     $("set-title").textContent = SET_SIZE >= words.length ? "▶ はじめる（" + words.length + "もん）" : "▶ セットを えらんで はじめる（" + SET_SIZE + "もんずつ）";
-    $("home-count").textContent = words.length;
+    $("set-title").classList.toggle("hidden", dailyMode);
+    $("home-sets").classList.toggle("hidden", dailyMode);
+    refreshStamps(dailyMode);
     var sm = $("home-summary");
     sm.innerHTML = "";
     summaryText().forEach(function(t){ /* ラベルと かずが べつの ぎょうに わかれないように */
@@ -676,7 +736,7 @@
     $("chk-keyboard").checked = keyboardOn;
     var wk = weakWords();
     var b = $("btn-weak");
-    if (wk.length) {
+    if (wk.length && !dailyMode) {
       b.textContent = "✏️ まちがえた もんだいだけ れんしゅう（" + wk.length + "こ）";
       b.classList.remove("hidden");
     } else {
@@ -700,10 +760,44 @@
     });
     var g = $("btn-gacha-home");
     g.textContent = "🎁 ガチャを まわす（あと " + tickets.length + "かい）";
-    g.classList.toggle("hidden", !tickets.length || isComplete());
+    g.classList.toggle("hidden", !tickets.length || !canDraw());
     $("btn-zukan").classList.toggle("hidden", !CARDS.length);
-    $("btn-zukan").textContent = "🎀 カードずかん（" + ownedCount() + " / " + CARDS.length + "）" + (isComplete() ? " 🎉" : "");
+    $("btn-zukan").textContent = "🎀\nずかん " + ownedCount() + "/" + CARDS.length + (isComplete() ? " 🎉" : "");
   }
+  /* ---- スタンプカードと きょうの れんしゅう ---- */
+  function refreshStamps(dailyMode){
+    var box = $("stamps"), msg = $("stamp-msg"), bt = $("btn-today");
+    box.classList.toggle("hidden", !dailyMode);
+    msg.classList.toggle("hidden", !dailyMode);
+    bt.classList.toggle("hidden", !dailyMode);
+    if (!dailyMode) return;
+    box.innerHTML = "";
+    var n = stampCount();
+    for (var i = 0; i < list.stampDays; i++) {
+      var d = document.createElement("div");
+      d.className = "stamp" + (i < n ? " done" : "");
+      var mk = document.createElement("span"); mk.className = "mk"; mk.textContent = i < n ? "🌸" : "・";
+      d.appendChild(mk); d.appendChild(document.createTextNode(String(i + 1)));
+      box.appendChild(d);
+    }
+    var goal = document.createElement("div");
+    goal.className = "stamp goal";
+    var gm = document.createElement("span"); gm.className = "mk"; gm.textContent = stampsComplete() ? "✨" : "🏁";
+    goal.appendChild(gm); goal.appendChild(document.createTextNode("テスト"));
+    box.appendChild(goal);
+    msg.textContent = stampsComplete() ? "🎉 スタンプ コンプリート！" : "スタンプ あと " + (list.stampDays - n) + "こで ✨キラキラ カード！";
+    var rec = dayRec();
+    if (rec.run && !rec.done && !weakWords().length) { rec.done = true; saveDaily(); }
+    if (!rec.run) bt.textContent = "▶ きょうの れんしゅう（" + words.length + "もん）";
+    else if (!rec.done) bt.textContent = "✏️ まちがえた " + weakWords().length + "もんを れんしゅう";
+    else bt.textContent = "▶ もう1かい " + words.length + "もん やる";
+    bt.classList.toggle("btn-gacha", false);
+  }
+  $("btn-today").addEventListener("click", function(){
+    var rec = dayRec();
+    if (rec.run && !rec.done) startQuiz(weakWords(), null, "retry");
+    else startQuiz(words.slice(), setKey(words), rec.run ? "extra" : "run");
+  });
   function setsOf(){
     var out = [];
     for (var i = 0; i < words.length; i += SET_SIZE) out.push(words.slice(i, i + SET_SIZE));
@@ -736,9 +830,10 @@
       var t = a[i]; a[i] = a[j]; a[j] = t;
     }
   }
-  function startQuiz(list, key){
+  function startQuiz(list, key, mode){
     if (!list.length) return;
     currentSetKey = key || null;
+    quizMode = mode || "free";
     queue = list.slice();
     if (shuffleOn) shuffleInPlace(queue);
     pos = 0; misses = [];
@@ -929,15 +1024,38 @@
       b.textContent = shown(x.w);
       ml.appendChild(b);
     });
-    $("btn-retry-miss").classList.toggle("hidden", misses.length === 0);
     if (currentSetKey && !(setBest[currentSetKey] >= okCount)) setBest[currentSetKey] = okCount;
     var gachaOn = CARDS.length && !isComplete();
     if (gachaOn) tickets.push(okCount / queue.length); /* さいごまで やったら ガチャけん 1まい */
+    /* きょうの れんしゅう：15もん → まちがえた もんだいだけ（さいだい 3かい）→ スタンプ */
+    var nextBtn = $("btn-next-step"), stampMsg = $("result-stamp");
+    nextBtn.classList.add("hidden");
+    stampMsg.classList.add("hidden");
+    if (list.stampDays && (quizMode === "run" || quizMode === "retry")) {
+      var rec = dayRec();
+      if (quizMode === "run") rec.run = true; else rec.retries++;
+      if (!rec.done && (misses.length === 0 || rec.retries >= 3)) {
+        var wasComplete = stampsComplete();
+        rec.done = true;
+        stampMsg.textContent = "🌸 きょうの スタンプ ゲット！（" + stampCount() + " / " + list.stampDays + "）";
+        if (!wasComplete && stampsComplete() && CARDS.length && !isComplete()) {
+          tickets.push(1); /* スタンプ コンプリートの とくべつ ガチャけん */
+          stampMsg.textContent = "🎉 スタンプ コンプリート！ とくべつな ガチャけんを もらったよ ✨";
+        }
+        stampMsg.classList.remove("hidden");
+      } else if (!rec.done) {
+        nextBtn.textContent = "✏️ まちがえた " + misses.length + "もんを れんしゅう";
+        nextBtn.classList.remove("hidden");
+      }
+      saveDaily();
+    }
+    $("btn-retry-miss").classList.toggle("hidden", misses.length === 0 || !nextBtn.classList.contains("hidden"));
     saveGacha();
     $("btn-gacha-result").classList.toggle("hidden", !gachaOn);
     show("result");
   }
-  $("btn-retry-miss").addEventListener("click", function(){ startQuiz(misses.slice()); });
+  $("btn-next-step").addEventListener("click", function(){ startQuiz(misses.slice(), null, "retry"); });
+  $("btn-retry-miss").addEventListener("click", function(){ startQuiz(misses.slice(), null, quizMode === "extra" ? "extra" : "free"); });
   $("btn-home1").addEventListener("click", function(){ show("home"); });
   $("btn-gacha-result").addEventListener("click", openGacha);
 
@@ -968,6 +1086,12 @@
   var spinning = false;
   function ownedCount(){ return CARDS.filter(function(c){ return owned[c.e]; }).length; }
   function isComplete(){ return ownedCount() === CARDS.length; }
+  function kiraLocked(){ return !!list.stampDays && !stampsComplete(); }
+  /* いま ガチャで でる カードが あるか（キラキラは スタンプ コンプリートまで でない） */
+  function canDraw(){
+    var fresh = CARDS.filter(function(c){ return !owned[c.e]; });
+    return fresh.some(function(c){ return c.r < 2 || !kiraLocked(); });
+  }
   function drawCard(acc){
     /* かぶりなし。キラキラは さいごの 1まいに とっておく */
     var fresh = CARDS.filter(function(c){ return !owned[c.e]; });
@@ -990,12 +1114,15 @@
   function updateGacha(){
     var done = isComplete();
     var left = $("gacha-left");
-    left.textContent = done ? "🎉 コンプリート！ ぜんぶ あつめたよ！" : "ガチャけん のこり " + tickets.length + "まい（カード あと " + (CARDS.length - ownedCount()) + "まい）";
+    var locked = !done && !canDraw();
+    left.textContent = done ? "🎉 コンプリート！ ぜんぶ あつめたよ！"
+      : locked ? "✨ キラキラは スタンプが ぜんぶ たまったら でるよ（あと " + (list.stampDays - stampCount()) + "こ）"
+      : "ガチャけん のこり " + tickets.length + "まい（カード あと " + (CARDS.length - ownedCount()) + "まい）";
     left.classList.toggle("complete", done);
-    $("btn-spin").classList.toggle("hidden", !tickets.length || done);
+    $("btn-spin").classList.toggle("hidden", !tickets.length || done || locked);
   }
   $("btn-spin").addEventListener("click", function(){
-    if (spinning || !tickets.length || isComplete()) return;
+    if (spinning || !tickets.length || !canDraw()) return;
     spinning = true;
     var c = drawCard(tickets.shift());
     var isNew = !owned[c.e];
