@@ -2,8 +2,88 @@
    アプリは いちばん うえの リストを つかう（URL に ?list=ID を つけると ほかの リスト）。
    lower: true なら こもじで れんしゅう。setSize: 1かいの もんだいの かず。
    words の かわりに groups（title・words・hint・examples）を かくと、カテゴリの じゅんばんで だして コツも でる。
+   order（たんごの ならび）を かくと、もんだいは その じゅんばんで でる。
+   stampDays を かくと「きょうの れんしゅう」と スタンプカードに なる（キラキラは スタンプ コンプリートまで でない）。
    cards: その リストの ガチャで あつめる カード（r: 0=ノーマル 1=レア 2=キラキラ。キラキラは さいごに でる） */
 var SPELL_LISTS = [
+  {
+    id: "2026-11-06",
+    name: "11/6（きん）の テスト",
+    lower: true,
+    setSize: 15,
+    stampDays: 4,  /* れんしゅうする ひの かず（スタンプの かず）。ぜんぶ たまると キラキラが でる */
+    /* もんだいの じゅんばん（スプレッドシートの ひょうと おなじ）。なければ groups の じゅんばん */
+    order: ["rainy", "windy", "cloudy", "garden", "smile", "gift", "share", "pretty",
+            "something", "behind", "moving", "different", "separate", "unripe", "chutney"],
+    groups: [
+      {
+        title: "🌦️ おてんきの ことば",
+        words: [
+          {w:"rainy", m:"あめの 🌧️（あめが ふって いる）"},
+          {w:"windy", m:"かぜが つよい 🌬️（かぜが びゅうびゅう ふく）"},
+          {w:"cloudy", m:"くもりの ☁️（くもが いっぱい）"}
+        ],
+        hint: "rain に y で rainy、wind に y で windy、cloud に y で cloudy",
+        examples: [
+          {en:"It is rainy today.", ja:"きょうは あめだよ（rainy）"},
+          {en:"It is windy and cloudy.", ja:"かぜが つよくて くもりだよ（windy・cloudy）"}
+        ]
+      },
+      {
+        title: "😊 やさしさの ことば",
+        words: [
+          {w:"smile", m:"えがお 😊（にっこり わらう こと）"},
+          {w:"gift", m:"プレゼント 🎁（ひとに あげる もの）"},
+          {w:"share", m:"わけあう 🍰（みんなで わける こと）"}
+        ],
+        examples: [
+          {en:"I share my gift with a smile.", ja:"にっこり わらって プレゼントを わけるよ（share・gift・smile）"}
+        ]
+      },
+      {
+        title: "🌷 にわと たべもの",
+        words: [
+          {w:"garden", m:"にわ 🌷（はなや やさいを そだてる ところ）"},
+          {w:"pretty", m:"かわいい 🌸（きれいで かわいい こと）"},
+          {w:"unripe", m:"まだ たべごろじゃない 🍏（まだ あおくて かたい くだもの）"},
+          {w:"chutney", m:"チャツネ 🥭（くだものや やさいで つくった ソース）"}
+        ],
+        hint: "un が つくと『〜じゃない』。ripe（たべごろ）→ unripe（たべごろじゃない）",
+        examples: [
+          {en:"Pretty flowers grow in the garden.", ja:"にわに かわいい はなが さいて いるよ（pretty・garden）"},
+          {en:"This mango is unripe.", ja:"この マンゴーは まだ たべごろじゃないよ（unripe）"},
+          {en:"I eat chutney with curry.", ja:"カレーと いっしょに チャツネを たべるよ（chutney）"}
+        ]
+      },
+      {
+        title: "🔀 ちがいの ことば",
+        words: [
+          {w:"different", m:"ちがう 🔀（おなじ じゃない こと）"},
+          {w:"separate", m:"わける ✂️（べつべつに する こと）"}
+        ],
+        examples: [
+          {en:"Separate the red and blue balls. They are different colors.", ja:"あかと あおの ボールを わけてね。いろが ちがうよ（separate・different）"}
+        ]
+      },
+      {
+        title: "⭐ そのほかの ことば",
+        words: [
+          {w:"something", m:"なにか ❓（なにかは わからない もの）"},
+          {w:"behind", m:"うしろに 🙈（〜の うしろ）"},
+          {w:"moving", m:"うごいている 🚗（うごいて いる こと）"}
+        ],
+        examples: [
+          {en:"Something is moving behind the tree!", ja:"きの うしろで なにかが うごいて いるよ！（something・moving・behind）"}
+        ]
+      }
+    ],
+    cards: [
+      {e:"🐼", n:"パンダ", r:0}, {e:"🐥", n:"ひよこ", r:0}, {e:"🍩", n:"ドーナツ", r:0},
+      {e:"🌷", n:"チューリップ", r:0}, {e:"🧸", n:"くまさん", r:0},
+      {e:"🐬", n:"イルカ", r:1}, {e:"🐧", n:"ペンギン", r:1},
+      {e:"🧚", n:"ようせい", r:2}
+    ]
+  },
   {
     id: "2026-10-27",
     name: "10/27（か）の テスト",
