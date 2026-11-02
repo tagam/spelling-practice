@@ -250,7 +250,7 @@
   .score-row .w small { display: block; color: var(--muted); font-size: .85rem; }
   .score-row .cnt { color: var(--muted); font-size: .85rem; white-space: nowrap; }
   .list-name { text-align: center; font-size: 1.15rem; font-weight: 800; margin: 0 0 2px; }
-  .hint { margin: 4px 0 6px; padding: 10px 12px; border-radius: 12px; background: var(--tile-bg); font-size: .95rem; }
+  .hint { margin: 4px 0 6px; padding: 10px 12px; border-radius: 12px; background: var(--tile-bg); font-size: .95rem; white-space: pre-line; }
   .hint b { display: block; font-size: .85rem; color: var(--muted); }
   .tip-box { border: 2px solid var(--border); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; }
   .tip-box h3 { margin: 0 0 6px; font-size: 1.05rem; }
@@ -869,11 +869,18 @@
     var g = groupOf(cur.w);
     var hb = $("fb-hint");
     hb.innerHTML = "";
-    if (g && g.hint) {
+    /* その たんごが でてくる コツ → その たんごを つかった れいぶん → カテゴリの コツ の じゅんに えらぶ */
+    var tip = g && (function(){
+      var k = norm(cur.w), exs = g.examples || [];
+      if (g.hint && norm(g.hint).indexOf(k) >= 0) return g.hint;
+      for (var i = 0; i < exs.length; i++) { if (norm(exs[i].en).indexOf(k) >= 0) return exs[i].en + "\n→ " + exs[i].ja; }
+      return g.hint || (exs.length ? exs[0].en + "\n→ " + exs[0].ja : "");
+    })();
+    if (tip) {
       var hl = document.createElement("b"); hl.textContent = "💡 " + g.title;
-      hb.appendChild(hl); hb.appendChild(document.createTextNode(g.hint));
+      hb.appendChild(hl); hb.appendChild(document.createTextNode(tip));
     }
-    hb.classList.toggle("hidden", !(g && g.hint));
+    hb.classList.toggle("hidden", !tip);
     $("quiz-bar").style.width = ((pos + 1) / queue.length * 100) + "%";
     $("btn-next").focus();
   }

@@ -11,65 +11,63 @@ var SPELL_LISTS = [
     setSize: 15,
     groups: [
       {
-        title: "てんきの ことば",
+        title: "🌦️ おてんきの ことば",
         words: [
-          {w:"windy", m:"かぜが つよい（びゅうびゅう かぜが ふく てんき） 🌬️"},
-          {w:"cloudy", m:"くもりの（くもが いっぱいの てんき） ☁️"},
-          {w:"rainy", m:"あめの（あめが ふる てんき） ☔"},
-          {w:"moving", m:"うごいている（じっと していない こと） 🏃"}
+          {w:"rainy", m:"あめの 🌧️（あめが ふって いる）"},
+          {w:"windy", m:"かぜが つよい 🌬️（かぜが びゅうびゅう ふく）"},
+          {w:"cloudy", m:"くもりの ☁️（くもが いっぱい）"}
         ],
-        hint: "wind・cloud・rain の うしろに y を つけると てんきの ことば",
+        hint: "rain に y で rainy、wind に y で windy、cloud に y で cloudy",
         examples: [
-          {en:"It is windy, cloudy and rainy today.", ja:"きょうは かぜが つよくて、くもりで、あめだよ（windy・cloudy・rainy）"},
-          {en:"The clouds are moving.", ja:"くもが うごいているよ（moving）"}
+          {en:"It is rainy today.", ja:"きょうは あめだよ（rainy）"},
+          {en:"It is windy and cloudy.", ja:"かぜが つよくて くもりだよ（windy・cloudy）"}
         ]
       },
       {
-        title: "にわの ことば",
+        title: "😊 やさしさの ことば",
         words: [
-          {w:"garden", m:"にわ（はなや やさいを そだてる ところ） 🏡"},
-          {w:"pretty", m:"かわいい・きれい（みると うれしくなる かんじ） 🌷"},
-          {w:"behind", m:"〜の うしろに（みえない ほうに ある こと） 🙈"}
+          {w:"smile", m:"えがお 😊（にっこり わらう こと）"},
+          {w:"gift", m:"プレゼント 🎁（ひとに あげる もの）"},
+          {w:"share", m:"わけあう 🍰（みんなで わける こと）"}
         ],
-        hint: "にわの きの うしろに きれいな はなが あるよ",
         examples: [
-          {en:"The pretty flowers are behind the tree in the garden.", ja:"にわの きの うしろに きれいな はなが あるよ（pretty・behind・garden）"}
+          {en:"I share my gift with a smile.", ja:"にっこり わらって プレゼントを わけるよ（share・gift・smile）"}
         ]
       },
       {
-        title: "たべものの ことば",
+        title: "🌷 にわと たべもの",
         words: [
-          {w:"unripe", m:"まだ じゅくしていない（まだ たべごろじゃない こと） 🥭"},
-          {w:"chutney", m:"チャツネ（くだものや やさいで つくる ソース） 🫙"}
+          {w:"garden", m:"にわ 🌷（はなや やさいを そだてる ところ）"},
+          {w:"pretty", m:"かわいい 🌸（きれいで かわいい こと）"},
+          {w:"unripe", m:"まだ たべごろじゃない 🍏（まだ あおくて かたい くだもの）"},
+          {w:"chutney", m:"チャツネ 🥭（くだものや やさいで つくった ソース）"}
         ],
-        hint: "un が つくと はんたい。ripe（じゅくした）→ unripe（まだ じゅくしていない）",
+        hint: "un が つくと『〜じゃない』。ripe（たべごろ）→ unripe（たべごろじゃない）",
         examples: [
-          {en:"Unripe mangoes make chutney.", ja:"まだ じゅくしていない マンゴーで チャツネを つくるよ（unripe・chutney）"}
+          {en:"Pretty flowers grow in the garden.", ja:"にわに かわいい はなが さいて いるよ（pretty・garden）"},
+          {en:"This mango is unripe.", ja:"この マンゴーは まだ たべごろじゃないよ（unripe）"},
+          {en:"I eat chutney with curry.", ja:"カレーと いっしょに チャツネを たべるよ（chutney）"}
         ]
       },
       {
-        title: "なかよしの ことば",
+        title: "🔀 ちがいの ことば",
         words: [
-          {w:"something", m:"なにか（なにかは わからない もの） ❓"},
-          {w:"gift", m:"プレゼント（だれかに あげる もの） 🎁"},
-          {w:"share", m:"わけあう（みんなで いっしょに つかう こと） 🤝"},
-          {w:"smile", m:"えがお・ほほえむ（にっこり わらう こと） 😊"}
+          {w:"different", m:"ちがう 🔀（おなじ じゃない こと）"},
+          {w:"separate", m:"わける ✂️（べつべつに する こと）"}
         ],
-        hint: "きみに なにか あるよ、プレゼントだよ！ わけあって にっこりしよう",
         examples: [
-          {en:"I have something for you. It is a gift!", ja:"きみに なにか あるよ。プレゼントだよ！（something・gift）"},
-          {en:"Let's share and smile.", ja:"わけあって にっこりしよう（share・smile）"}
+          {en:"Separate the red and blue balls. They are different colors.", ja:"あかと あおの ボールを わけてね。いろが ちがうよ（separate・different）"}
         ]
       },
       {
-        title: "ちがいの ことば",
+        title: "⭐ そのほかの ことば",
         words: [
-          {w:"different", m:"ちがう（おなじじゃない こと） 🔀"},
-          {w:"separate", m:"わける・べつべつの（いっしょに しない こと） ✂️"}
+          {w:"something", m:"なにか ❓（なにかは わからない もの）"},
+          {w:"behind", m:"うしろに 🙈（〜の うしろ）"},
+          {w:"moving", m:"うごいている 🚗（うごいて いる こと）"}
         ],
-        hint: "separate の まんなかには a rat（ねずみ）が かくれてる：sep-a-rat-e。different は f が 2つ",
         examples: [
-          {en:"These two cups are different. Let's separate them.", ja:"この 2つの コップは ちがうね。べつべつに しよう（different・separate）"}
+          {en:"Something is moving behind the tree!", ja:"きの うしろで なにかが うごいて いるよ！（something・moving・behind）"}
         ]
       }
     ],
