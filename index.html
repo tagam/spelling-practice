@@ -530,6 +530,11 @@
   function useList(id){
     list = listById(id) || LISTS[0];
     words = list.groups ? [].concat.apply([], list.groups.map(function(g){ return g.words; })) : list.words.slice();
+    if (list.order) {
+      var byKey = {};
+      words.forEach(function(x){ byKey[norm(x.w)] = x; });
+      words = list.order.map(function(w){ return byKey[norm(w)]; }).filter(Boolean);
+    }
     CARDS = list.cards || [];
     SET_SIZE = list.setSize || 10;
     if (!Array.isArray(ticketsAll[list.id])) ticketsAll[list.id] = [];
