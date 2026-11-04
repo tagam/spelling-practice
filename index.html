@@ -375,6 +375,7 @@
   .prize.kira .nm, .prize.kira .rr, .zcell.kira .nm, .zcell.kira .ct { color: #3d2f1e; }
   @keyframes pop { from { transform: scale(.3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   @keyframes shimmer { to { background-position: 300% 300%; } }
+  .pack-title { font-size: 1rem; text-align: center; margin: 14px 0 0; }
   .zukan { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 16px 8px; margin: 14px 0 6px; }
   .zcell { position: relative; min-width: 0; border: 3px solid var(--border); border-radius: 14px; padding: 6px 2px; text-align: center; }
   .zcell .em { font-size: 2.2rem; line-height: 1.25; }
@@ -514,7 +515,7 @@
     <div class="card">
       <p style="text-align:center; font-size:1.2rem; margin:0 0 4px;">🎀 カードずかん</p>
       <p class="legend" id="zukan-count"></p>
-      <div class="zukan" id="zukan-list"></div>
+      <div id="zukan-list"></div>
       <button class="btn-sub" id="btn-home5">ホームに もどる</button>
     </div>
   </div>
@@ -522,6 +523,7 @@
 </div>
 
 <script src="lists.js"></script>
+<script src="cards.js"></script>
 <script>
 (function(){
   "use strict";
@@ -556,7 +558,9 @@
   function norm(s){ return String(s).replace(/\s+/g, " ").trim().toUpperCase(); }
   /* ---- たんごリスト（lists.js） ---- */
   var LISTS = window.SPELL_LISTS;
-  var list = LISTS[0], words = [], CARDS = [], SET_SIZE = 10;
+  var list = LISTS[0], words = [], SET_SIZE = 10;
+  /* ---- カードダス（cards.js）。あつめた カードと ガチャけんは しゅうを またいで のこる ---- */
+  var PACKS = window.SPELL_PACKS || [], CARDS = [], PACK_NO = 0;
   function listById(id){
     for (var i = 0; i < LISTS.length; i++) { if (LISTS[i].id === id) return LISTS[i]; }
     return null;
@@ -589,29 +593,38 @@
     if (s && typeof s === "object") stats = s;
   } catch (e) {}
   /* ---- セットの ベスト・ガチャけん・あつめた カード ---- */
-  /* ガチャけんと カードは リストごと。まえの かたちは スペリングビーの ぶんとして ひきつぐ */
-  var setBest = {}, ticketsAll = {}, ownedAll = {}, tickets = [], owned = {};
+  var setBest = {}, tickets = [], owned = {};
   try {
     var sb0 = JSON.parse(localStorage.getItem("spell_set_best") || "{}");
     if (sb0 && typeof sb0 === "object") setBest = sb0;
-    var tk2 = JSON.parse(localStorage.getItem("spell_tickets_v2") || "null");
-    if (tk2 && typeof tk2 === "object") { ticketsAll = tk2; } else {
-      var tk0 = JSON.parse(localStorage.getItem("spell_tickets") || "[]");
-      if (Array.isArray(tk0)) ticketsAll["spellingbee-2026"] = tk0;
-    }
-    var ow2 = JSON.parse(localStorage.getItem("spell_cards_v2") || "null");
-    if (ow2 && typeof ow2 === "object") { ownedAll = ow2; } else {
-      var ow0 = JSON.parse(localStorage.getItem("spell_cards") || "{}");
-      if (ow0 && typeof ow0 === "object") ownedAll["spellingbee-2026"] = ow0;
+    var al = JSON.parse(localStorage.getItem("spell_album") || "null");
+    var tk3 = JSON.parse(localStorage.getItem("spell_tickets_v3") || "null");
+    if (al && typeof al === "object") owned = al;
+    if (Array.isArray(tk3)) tickets = tk3;
+    if (!al) {
+      /* まえの かたち（リストごと）から ひきつぐ：11/6 の カードは だい1だん と おなじ */
+      var ow2 = JSON.parse(localStorage.getItem("spell_cards_v2") || "{}") || {};
+      var tk2 = JSON.parse(localStorage.getItem("spell_tickets_v2") || "{}") || {};
+      if (ow2["2026-11-06"] && typeof ow2["2026-11-06"] === "object") owned = ow2["2026-11-06"];
+      if (!tk3 && Array.isArray(tk2["2026-11-06"])) tickets = tk2["2026-11-06"];
     }
   } catch (e) {}
   function saveGacha(){
     try {
       localStorage.setItem("spell_set_best", JSON.stringify(setBest));
-      localStorage.setItem("spell_tickets_v2", JSON.stringify(ticketsAll));
-      localStorage.setItem("spell_cards_v2", JSON.stringify(ownedAll));
+      localStorage.setItem("spell_tickets_v3", JSON.stringify(tickets));
+      localStorage.setItem("spell_album", JSON.stringify(owned));
     } catch (e) {}
   }
+  function packDone(p){ return p.cards.every(function(c){ return owned[c.e]; }); }
+  /* いまの だん＝まだ そろって いない さいしょの だん */
+  function refreshPack(){
+    PACK_NO = PACKS.length;
+    for (var i = 0; i < PACKS.length; i++) { if (!packDone(PACKS[i])) { PACK_NO = i; break; } }
+    CARDS = PACK_NO < PACKS.length ? PACKS[PACK_NO].cards : [];
+  }
+  function allDone(){ return PACK_NO >= PACKS.length; }
+  refreshPack();
   /* ---- まいにちの スタンプ（リストごと・ひづけごと） ---- */
   var daily = {};
   try {
@@ -642,12 +655,7 @@
       words.forEach(function(x){ byKey[norm(x.w)] = x; });
       words = list.order.map(function(w){ return byKey[norm(w)]; }).filter(Boolean);
     }
-    CARDS = list.cards || [];
     SET_SIZE = list.setSize || 10;
-    if (!Array.isArray(ticketsAll[list.id])) ticketsAll[list.id] = [];
-    if (!ownedAll[list.id] || typeof ownedAll[list.id] !== "object") ownedAll[list.id] = {};
-    tickets = ticketsAll[list.id];
-    owned = ownedAll[list.id];
     document.getElementById("sub-text").textContent = list.lower ? "きいて、こもじで かいてみよう" : "きいて、おおもじで かいてみよう";
     var inp = document.getElementById("quiz-input");
     inp.classList.toggle("lower", !!list.lower);
@@ -812,8 +820,8 @@
     var g = $("btn-gacha-home");
     g.textContent = "🎁 ガチャを まわす（あと " + tickets.length + "かい）";
     g.classList.toggle("hidden", !tickets.length || !canDraw());
-    $("btn-zukan").classList.toggle("hidden", !CARDS.length);
-    $("btn-zukan").textContent = "🎀\nずかん " + ownedCount() + "/" + CARDS.length + (isComplete() ? " 🎉" : "");
+    $("btn-zukan").classList.toggle("hidden", !PACKS.length);
+    $("btn-zukan").textContent = "🎀\nずかん " + (allDone() ? "🎉" : ownedCount() + "/" + CARDS.length);
   }
   /* ---- スタンプカードと きょうの れんしゅう ---- */
   function refreshStamps(dailyMode){
@@ -1076,7 +1084,7 @@
       ml.appendChild(b);
     });
     if (currentSetKey && !(setBest[currentSetKey] >= okCount)) setBest[currentSetKey] = okCount;
-    var gachaOn = CARDS.length && !isComplete();
+    var gachaOn = canDraw();
     if (gachaOn) tickets.push(okCount / queue.length); /* さいごまで やったら ガチャけん 1まい */
     /* きょうの れんしゅう：15もん → まちがえた もんだいだけ（さいだい 3かい）→ スタンプ */
     /* つぎに やる ことは ホームの ボタンから。けっかでは ガチャと ホームに もどる だけ */
@@ -1089,7 +1097,7 @@
         var wasComplete = stampsComplete();
         rec.done = true;
         stampMsg.textContent = "🌸 きょうの スタンプ ゲット！（" + stampCount() + " / " + list.stampDays + "）";
-        if (!wasComplete && stampsComplete() && CARDS.length && !isComplete()) {
+        if (!wasComplete && stampsComplete() && canDraw()) {
           tickets.push(1); /* スタンプ コンプリートの とくべつ ガチャけん */
           stampMsg.textContent = "🎉 スタンプ コンプリート！ とくべつな ガチャけんを もらったよ";
         }
@@ -1136,7 +1144,7 @@
   function ownedCount(){ return CARDS.filter(function(c){ return owned[c.e]; }).length; }
   function isComplete(){ return ownedCount() === CARDS.length; }
   /* いま ガチャで でる カードが あるか */
-  function canDraw(){ return !isComplete(); }
+  function canDraw(){ return !allDone(); }
   function drawCard(acc){
     /* かぶりなし。キラキラは さいごの 1まいに とっておく */
     var fresh = CARDS.filter(function(c){ return !owned[c.e]; });
@@ -1157,12 +1165,17 @@
     updateGacha();
     spin(); /* ひらいたら すぐ 1かい まわす（「まわす！」を おさずに もどって しまわないように） */
   }
-  function updateGacha(){
-    var done = isComplete();
+  function updateGacha(finishedPack){
+    var done = allDone();
     var left = $("gacha-left");
-    left.textContent = done ? "🎉 コンプリート！ ぜんぶ あつめたよ！"
-      : "ガチャけん のこり " + tickets.length + "まい（カード あと " + (CARDS.length - ownedCount()) + "まい）";
-    left.classList.toggle("complete", done);
+    if (finishedPack) {
+      left.textContent = "🎉 だい" + finishedPack + "だん コンプリート！" + (done ? " つぎの だんを まってね" : " つぎは だい" + (PACK_NO + 1) + "だん！");
+    } else if (done) {
+      left.textContent = "🎉 ぜんぶの だんを コンプリート！ つぎの だんを まってね";
+    } else {
+      left.textContent = "だい" + (PACK_NO + 1) + "だん「" + PACKS[PACK_NO].name + "」 カード あと " + (CARDS.length - ownedCount()) + "まい（ガチャけん " + tickets.length + "まい）";
+    }
+    left.classList.toggle("complete", !!finishedPack || done);
     $("btn-spin").classList.toggle("hidden", !tickets.length || done);
   }
   $("btn-spin").addEventListener("click", spin);
@@ -1173,6 +1186,9 @@
     var c = drawCard(tickets.shift());
     var isNew = !owned[c.e];
     owned[c.e] = (owned[c.e] || 0) + 1;
+    var before = PACK_NO;
+    refreshPack();
+    var finishedPack = PACK_NO !== before ? before + 1 : 0; /* この 1まいで だんが そろった */
     saveGacha();
     var cap = $("gacha-capsule");
     $("gacha-prize").classList.add("hidden");
@@ -1194,20 +1210,33 @@
       playSound(true);
       $("btn-spin").textContent = "もう1かい まわす！";
       spinning = false;
-      updateGacha();
+      updateGacha(finishedPack);
     }, still ? 300 : 1300);
   }
   $("btn-gacha-zukan").addEventListener("click", function(){ show("zukan"); });
   $("btn-home4").addEventListener("click", function(){ show("home"); });
 
   /* ---- ずかん ---- */
+  /* あつめおわった だんと いまの だんを ならべる。つぎの だんは まだ ひみつ */
   function refreshZukan(){
     var box = $("zukan-list");
     box.innerHTML = "";
-    var have = 0;
-    CARDS.forEach(function(c){
+    var last = Math.min(PACK_NO, PACKS.length - 1);
+    for (var i = last; i >= 0; i--) {
+      var h = document.createElement("h3"); h.className = "pack-title";
+      var got = PACKS[i].cards.filter(function(c){ return owned[c.e]; }).length;
+      h.textContent = "だい" + (i + 1) + "だん「" + PACKS[i].name + "」 " + got + " / " + PACKS[i].cards.length + (packDone(PACKS[i]) ? " 🎉" : "");
+      box.appendChild(h);
+      var grid = document.createElement("div"); grid.className = "zukan";
+      PACKS[i].cards.forEach(function(c){ grid.appendChild(zukanCell(c)); });
+      box.appendChild(grid);
+    }
+    var zc = $("zukan-count");
+    zc.textContent = allDone() ? "🎉 ぜんぶの だんを コンプリート！ つぎの だんを まってね" : "8まい あつめると つぎの だんが でるよ　⭐レア　✨キラキラ";
+    zc.classList.toggle("complete", allDone());
+  }
+  function zukanCell(c){
       var n = owned[c.e] || 0;
-      if (n) have++;
       var d = document.createElement("div");
       d.className = "zcell " + RARITY_CLASS[c.r] + (n ? "" : " none");
       var em = document.createElement("div"); em.className = "em"; em.textContent = n ? c.e : "？";
@@ -1215,11 +1244,7 @@
       var ct = document.createElement("div"); ct.className = "ct"; ct.textContent = n > 1 ? "×" + n : "";
       if (c.r) { var bd = document.createElement("span"); bd.className = "badge " + RARITY_CLASS[c.r]; bd.textContent = RARITY_BADGE[c.r]; d.appendChild(bd); }
       d.appendChild(em); d.appendChild(nm); d.appendChild(ct);
-      box.appendChild(d);
-    });
-    var zc = $("zukan-count");
-    zc.textContent = list.name + "　" + (isComplete() ? "🎉 コンプリート！ ぜんぶ あつめたよ！" : "あつめた カード " + have + " / " + CARDS.length + "　⭐レア　✨キラキラ");
-    zc.classList.toggle("complete", isComplete());
+      return d;
   }
   $("btn-home5").addEventListener("click", function(){ show("home"); });
 
