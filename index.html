@@ -462,9 +462,7 @@
       <div id="result-msg" style="text-align:center; font-size:1.3rem;"></div>
       <div class="miss-list" id="result-miss"></div>
       <p class="stamp-msg hidden" id="result-stamp"></p>
-      <button class="btn-big hidden" id="btn-next-step"></button>
       <button class="btn-big btn-gacha" id="btn-gacha-result">🎁 ガチャを まわす！</button>
-      <button class="btn-sub hidden" id="btn-retry-miss">❌ まちがえたのだけ もういちど</button>
       <button class="btn-sub" id="btn-home1">ホームに もどる</button>
     </div>
   </div>
@@ -790,7 +788,7 @@
     var wk = weakWords();
     var b = $("btn-weak");
     if (wk.length && !dailyMode) {
-      b.textContent = "✏️ まちがえた もんだいだけ れんしゅう（" + wk.length + "こ）";
+      b.textContent = "✏️ まちがえた " + wk.length + "もんを れんしゅう";
       b.classList.remove("hidden");
     } else {
       b.classList.add("hidden");
@@ -842,13 +840,13 @@
     var rec = dayRec();
     if (rec.run && !rec.done && !weakWords().length) { rec.done = true; saveDaily(); }
     if (!rec.run) bt.textContent = "▶ きょうの れんしゅう（" + words.length + "もん）";
-    else if (!rec.done) bt.textContent = "✏️ まちがえた " + weakWords().length + "もんを れんしゅう";
+    else if (weakWords().length) bt.textContent = "✏️ まちがえた " + weakWords().length + "もんを れんしゅう";
     else bt.textContent = "▶ もう1かい " + words.length + "もん やる";
     bt.classList.toggle("btn-gacha", false);
   }
   $("btn-today").addEventListener("click", function(){
     var rec = dayRec();
-    if (rec.run && !rec.done) startQuiz(weakWords(), null, "retry");
+    if (rec.run && weakWords().length) startQuiz(weakWords(), null, rec.done ? "extra" : "retry");
     else startQuiz(words.slice(), setKey(words), rec.run ? "extra" : "run");
   });
   function setsOf(){
@@ -1081,8 +1079,8 @@
     var gachaOn = CARDS.length && !isComplete();
     if (gachaOn) tickets.push(okCount / queue.length); /* さいごまで やったら ガチャけん 1まい */
     /* きょうの れんしゅう：15もん → まちがえた もんだいだけ（さいだい 3かい）→ スタンプ */
-    var nextBtn = $("btn-next-step"), stampMsg = $("result-stamp");
-    nextBtn.classList.add("hidden");
+    /* つぎに やる ことは ホームの ボタンから。けっかでは ガチャと ホームに もどる だけ */
+    var stampMsg = $("result-stamp");
     stampMsg.classList.add("hidden");
     if (list.stampDays && (quizMode === "run" || quizMode === "retry")) {
       var rec = dayRec();
@@ -1096,19 +1094,17 @@
           stampMsg.textContent = "🎉 スタンプ コンプリート！ とくべつな ガチャけんを もらったよ ✨";
         }
         stampMsg.classList.remove("hidden");
-      } else if (!rec.done) {
-        nextBtn.textContent = "✏️ まちがえた " + misses.length + "もんを れんしゅう";
-        nextBtn.classList.remove("hidden");
       }
       saveDaily();
     }
-    $("btn-retry-miss").classList.toggle("hidden", misses.length === 0 || !nextBtn.classList.contains("hidden"));
+    if (misses.length && stampMsg.classList.contains("hidden")) {
+      stampMsg.textContent = "✏️ つぎは ホームで まちがえた " + misses.length + "もんを れんしゅうしよう";
+      stampMsg.classList.remove("hidden");
+    }
     saveGacha();
     $("btn-gacha-result").classList.toggle("hidden", !gachaOn);
     show("result");
   }
-  $("btn-next-step").addEventListener("click", function(){ startQuiz(misses.slice(), null, "retry"); });
-  $("btn-retry-miss").addEventListener("click", function(){ startQuiz(misses.slice(), null, quizMode === "extra" ? "extra" : "free"); });
   $("btn-home1").addEventListener("click", function(){ show("home"); });
   $("btn-gacha-result").addEventListener("click", openGacha);
 
@@ -1257,7 +1253,7 @@
     var wk = weakWords();
     var b2 = $("btn-weak2");
     if (wk.length) {
-      b2.textContent = "✏️ まちがえた もんだいだけ れんしゅう（" + wk.length + "こ）";
+      b2.textContent = "✏️ まちがえた " + wk.length + "もんを れんしゅう";
       b2.classList.remove("hidden");
     } else {
       b2.classList.add("hidden");
