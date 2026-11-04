@@ -1161,8 +1161,9 @@
     show("gacha");
     $("gacha-capsule").className = "capsule";
     $("gacha-prize").classList.add("hidden");
-    $("btn-spin").textContent = "まわす！";
+    $("btn-spin").textContent = "もう1かい まわす！";
     updateGacha();
+    spin(); /* ひらいたら すぐ 1かい まわす（「まわす！」を おさずに もどって しまわないように） */
   }
   function updateGacha(){
     var done = isComplete();
@@ -1174,9 +1175,11 @@
     left.classList.toggle("complete", done);
     $("btn-spin").classList.toggle("hidden", !tickets.length || done || locked);
   }
-  $("btn-spin").addEventListener("click", function(){
+  $("btn-spin").addEventListener("click", spin);
+  function spin(){
     if (spinning || !tickets.length || !canDraw()) return;
     spinning = true;
+    $("btn-spin").classList.add("hidden"); /* カプセルが ゆれている あいだは かくす */
     var c = drawCard(tickets.shift());
     var isNew = !owned[c.e];
     owned[c.e] = (owned[c.e] || 0) + 1;
@@ -1203,7 +1206,7 @@
       spinning = false;
       updateGacha();
     }, still ? 300 : 1300);
-  });
+  }
   $("btn-gacha-zukan").addEventListener("click", function(){ show("zukan"); });
   $("btn-home4").addEventListener("click", function(){ show("home"); });
 
