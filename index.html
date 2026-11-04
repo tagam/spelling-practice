@@ -603,7 +603,7 @@
     if (al && typeof al === "object") owned = al;
     if (Array.isArray(tk3)) tickets = tk3;
     if (!al) {
-      /* まえの かたち（リストごと）から ひきつぐ：11/6 の カードは だい1だん と おなじ */
+      /* まえの かたち（リストごと）から ひきつぐ：11/6 の カードは パート1 と おなじ */
       var ow2 = JSON.parse(localStorage.getItem("spell_cards_v2") || "{}") || {};
       var tk2 = JSON.parse(localStorage.getItem("spell_tickets_v2") || "{}") || {};
       if (ow2["2026-11-06"] && typeof ow2["2026-11-06"] === "object") owned = ow2["2026-11-06"];
@@ -618,7 +618,7 @@
     } catch (e) {}
   }
   function packDone(p){ return p.cards.every(function(c){ return owned[c.e]; }); }
-  /* いまの だん＝まだ そろって いない さいしょの だん */
+  /* いまの パート＝まだ そろって いない さいしょの パート */
   function refreshPack(){
     PACK_NO = PACKS.length;
     for (var i = 0; i < PACKS.length; i++) { if (!packDone(PACKS[i])) { PACK_NO = i; break; } }
@@ -1170,11 +1170,11 @@
     var done = allDone();
     var left = $("gacha-left");
     if (finishedPack) {
-      left.textContent = "🎉 だい" + finishedPack + "だん コンプリート！" + (done ? " つぎの だんを まってね" : " つぎは だい" + (PACK_NO + 1) + "だん！");
+      left.textContent = "🎉 パート" + finishedPack + " コンプリート！" + (done ? " つぎの パートを まってね" : " ガチャけん 1まい プレゼント！ つぎは パート" + (PACK_NO + 1) + "！");
     } else if (done) {
-      left.textContent = "🎉 ぜんぶの だんを コンプリート！ つぎの だんを まってね";
+      left.textContent = "🎉 ぜんぶの パートを コンプリート！ つぎの パートを まってね";
     } else {
-      left.textContent = "だい" + (PACK_NO + 1) + "だん「" + PACKS[PACK_NO].name + "」 カード あと " + (CARDS.length - ownedCount()) + "まい（ガチャけん " + tickets.length + "まい）";
+      left.textContent = "パート" + (PACK_NO + 1) + "「" + PACKS[PACK_NO].name + "」 カード あと " + (CARDS.length - ownedCount()) + "まい（ガチャけん " + tickets.length + "まい）";
     }
     left.classList.toggle("complete", !!finishedPack || done);
     $("btn-spin").classList.toggle("hidden", !tickets.length || done);
@@ -1189,7 +1189,8 @@
     owned[c.e] = (owned[c.e] || 0) + 1;
     var before = PACK_NO;
     refreshPack();
-    var finishedPack = PACK_NO !== before ? before + 1 : 0; /* この 1まいで だんが そろった */
+    var finishedPack = PACK_NO !== before ? before + 1 : 0; /* この 1まいで パートが そろった */
+    if (finishedPack && !allDone()) tickets.push(1); /* パート クリアの ごほうび */
     saveGacha();
     var cap = $("gacha-capsule");
     $("gacha-prize").classList.add("hidden");
@@ -1218,7 +1219,7 @@
   $("btn-home4").addEventListener("click", function(){ show("home"); });
 
   /* ---- ずかん ---- */
-  /* あつめおわった だんと いまの だんを ならべる。つぎの だんは まだ ひみつ */
+  /* あつめおわった パートと いまの パートを ならべる。つぎの パートは まだ ひみつ */
   function refreshZukan(){
     var box = $("zukan-list");
     box.innerHTML = "";
@@ -1226,14 +1227,14 @@
     for (var i = last; i >= 0; i--) {
       var h = document.createElement("h3"); h.className = "pack-title";
       var got = PACKS[i].cards.filter(function(c){ return owned[c.e]; }).length;
-      h.textContent = "だい" + (i + 1) + "だん「" + PACKS[i].name + "」 " + got + " / " + PACKS[i].cards.length + (packDone(PACKS[i]) ? " 🎉" : "");
+      h.textContent = "パート" + (i + 1) + "「" + PACKS[i].name + "」 " + got + " / " + PACKS[i].cards.length + (packDone(PACKS[i]) ? " 🎉" : "");
       box.appendChild(h);
       var grid = document.createElement("div"); grid.className = "zukan";
       PACKS[i].cards.forEach(function(c){ grid.appendChild(zukanCell(c)); });
       box.appendChild(grid);
     }
     var zc = $("zukan-count");
-    zc.textContent = allDone() ? "🎉 ぜんぶの だんを コンプリート！ つぎの だんを まってね" : "8まい あつめると つぎの だんが でるよ　⭐レア　✨キラキラ";
+    zc.textContent = allDone() ? "🎉 ぜんぶの パートを コンプリート！ つぎの パートを まってね" : "8まい あつめると つぎの パートが でるよ（ガチャけん 1まい プレゼント）　⭐レア　✨キラキラ";
     zc.classList.toggle("complete", allDone());
   }
   function zukanCell(c){
