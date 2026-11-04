@@ -528,6 +528,7 @@
 (function(){
   "use strict";
   var GAP_MS = 2500; /* 3回読みの間隔 */
+  var STAMP_BONUS = 3; /* スタンプが ぜんぶ たまった ときに もらえる ガチャけん */
 
   /* ---- ガチャの カード（r: 0=ノーマル 1=レア 2=キラキラ）は lists.js に リストごとに ある ---- */
   var RARITY_NAME = ["ノーマル", "⭐ レア", "✨ キラキラ"];
@@ -844,7 +845,7 @@
     var gm = document.createElement("span"); gm.className = "mk"; gm.textContent = stampsComplete() ? "✨" : "🏁";
     goal.appendChild(gm); goal.appendChild(document.createTextNode("テスト"));
     box.appendChild(goal);
-    msg.textContent = stampsComplete() ? "🎉 スタンプ コンプリート！" : "スタンプ あと " + (list.stampDays - n) + "こで とくべつな ガチャけん！";
+    msg.textContent = stampsComplete() ? "🎉 スタンプ コンプリート！" : "スタンプ あと " + (list.stampDays - n) + "こで ガチャけん " + STAMP_BONUS + "まい プレゼント！";
     var rec = dayRec();
     if (rec.run && !rec.done && !weakWords().length) { rec.done = true; saveDaily(); }
     if (!rec.run) bt.textContent = "▶ きょうの れんしゅう（" + words.length + "もん）";
@@ -1098,8 +1099,8 @@
         rec.done = true;
         stampMsg.textContent = "🌸 きょうの スタンプ ゲット！（" + stampCount() + " / " + list.stampDays + "）";
         if (!wasComplete && stampsComplete() && canDraw()) {
-          tickets.push(1); /* スタンプ コンプリートの とくべつ ガチャけん */
-          stampMsg.textContent = "🎉 スタンプ コンプリート！ とくべつな ガチャけんを もらったよ";
+          for (var b = 0; b < STAMP_BONUS; b++) tickets.push(1); /* スタンプ コンプリートの ごほうび */
+          stampMsg.textContent = "🎉 スタンプ コンプリート！ ガチャけんを " + STAMP_BONUS + "まい もらったよ";
         }
         stampMsg.classList.remove("hidden");
       }
