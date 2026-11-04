@@ -836,7 +836,7 @@
     var gm = document.createElement("span"); gm.className = "mk"; gm.textContent = stampsComplete() ? "✨" : "🏁";
     goal.appendChild(gm); goal.appendChild(document.createTextNode("テスト"));
     box.appendChild(goal);
-    msg.textContent = stampsComplete() ? "🎉 スタンプ コンプリート！" : "スタンプ あと " + (list.stampDays - n) + "こで ✨キラキラ カード！";
+    msg.textContent = stampsComplete() ? "🎉 スタンプ コンプリート！" : "スタンプ あと " + (list.stampDays - n) + "こで とくべつな ガチャけん！";
     var rec = dayRec();
     if (rec.run && !rec.done && !weakWords().length) { rec.done = true; saveDaily(); }
     if (!rec.run) bt.textContent = "▶ きょうの れんしゅう（" + words.length + "もん）";
@@ -1091,7 +1091,7 @@
         stampMsg.textContent = "🌸 きょうの スタンプ ゲット！（" + stampCount() + " / " + list.stampDays + "）";
         if (!wasComplete && stampsComplete() && CARDS.length && !isComplete()) {
           tickets.push(1); /* スタンプ コンプリートの とくべつ ガチャけん */
-          stampMsg.textContent = "🎉 スタンプ コンプリート！ とくべつな ガチャけんを もらったよ ✨";
+          stampMsg.textContent = "🎉 スタンプ コンプリート！ とくべつな ガチャけんを もらったよ";
         }
         stampMsg.classList.remove("hidden");
       }
@@ -1135,12 +1135,8 @@
   var spinning = false;
   function ownedCount(){ return CARDS.filter(function(c){ return owned[c.e]; }).length; }
   function isComplete(){ return ownedCount() === CARDS.length; }
-  function kiraLocked(){ return !!list.stampDays && !stampsComplete(); }
-  /* いま ガチャで でる カードが あるか（キラキラは スタンプ コンプリートまで でない） */
-  function canDraw(){
-    var fresh = CARDS.filter(function(c){ return !owned[c.e]; });
-    return fresh.some(function(c){ return c.r < 2 || !kiraLocked(); });
-  }
+  /* いま ガチャで でる カードが あるか */
+  function canDraw(){ return !isComplete(); }
   function drawCard(acc){
     /* かぶりなし。キラキラは さいごの 1まいに とっておく */
     var fresh = CARDS.filter(function(c){ return !owned[c.e]; });
@@ -1164,12 +1160,10 @@
   function updateGacha(){
     var done = isComplete();
     var left = $("gacha-left");
-    var locked = !done && !canDraw();
     left.textContent = done ? "🎉 コンプリート！ ぜんぶ あつめたよ！"
-      : locked ? "✨ キラキラは スタンプが ぜんぶ たまったら でるよ（あと " + (list.stampDays - stampCount()) + "こ）"
       : "ガチャけん のこり " + tickets.length + "まい（カード あと " + (CARDS.length - ownedCount()) + "まい）";
     left.classList.toggle("complete", done);
-    $("btn-spin").classList.toggle("hidden", !tickets.length || done || locked);
+    $("btn-spin").classList.toggle("hidden", !tickets.length || done);
   }
   $("btn-spin").addEventListener("click", spin);
   function spin(){
