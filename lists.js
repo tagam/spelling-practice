@@ -7,11 +7,74 @@
    ガチャの カードは cards.js（しゅうを またいで あつめる カードダス） */
 var SPELL_LISTS = [
   {
+    id: "2026-11-13",
+    name: "11/13（きん）の テスト",
+    lower: true,
+    setSize: 15,
+    stampDays: 4,  /* れんしゅうする ひの かず（スタンプの かず）。そろうと ガチャけん 3まい */
+    /* もんだいの じゅんばん（スプレッドシートの ひょうと おなじ）。なければ groups の じゅんばん */
+    order: ["air", "clean", "dirty", "fresh", "breathe", "weather", "storm", "smoke",
+            "shape", "objects", "factory", "vehicles", "burned", "release", "pollutes"],
+    groups: [
+      {
+        title: "🌬️ くうきの ことば",
+        words: [
+          {w:"air", m:"くうき 🌬️（いきを すう ときの みえない もの）"},
+          {w:"breathe", m:"いきを する 😮‍💨（くうきを すったり はいたり する）"},
+          {w:"fresh", m:"しんせん 🌿（あたらしくて きもちいい こと）"},
+          {w:"clean", m:"きれい ✨（よごれて いない こと）"},
+          {w:"dirty", m:"きたない 🦠（よごれて いる こと）"}
+        ],
+        hint: "clean ⇔ dirty は はんたいの ことば",
+        examples: [
+          {en:"We breathe fresh air.", ja:"しんせんな くうきを すうよ（breathe・fresh・air）"},
+          {en:"Clean air is good. Dirty air is bad.", ja:"きれいな くうきは いい。きたない くうきは だめ（clean・dirty）"}
+        ]
+      },
+      {
+        title: "🌤️ おてんきの ことば",
+        words: [
+          {w:"weather", m:"てんき 🌤️（はれや あめの こと）"},
+          {w:"storm", m:"あらし ⛈️（つよい かぜと あめ）"}
+        ],
+        examples: [
+          {en:"The weather is bad. A storm is coming!", ja:"てんきが わるいね。あらしが くるよ！（weather・storm）"}
+        ]
+      },
+      {
+        title: "💨 よごれの ことば",
+        words: [
+          {w:"smoke", m:"けむり 💨（ものが もえると でる もの）"},
+          {w:"burned", m:"もえた 🔥（ひで もえた こと）"},
+          {w:"release", m:"だす 🎈（そとに だす こと）"},
+          {w:"pollutes", m:"よごす 🏭💨（くうきや みずを よごす こと）"},
+          {w:"factory", m:"こうじょう 🏭（ものを つくる ところ）"},
+          {w:"vehicles", m:"のりもの 🚗（くるまや バスの こと）"}
+        ],
+        examples: [
+          {en:"The factory and vehicles release smoke.", ja:"こうじょうや のりものは けむりを だすよ（factory・vehicles・release・smoke）"},
+          {en:"Smoke pollutes the air.", ja:"けむりは くうきを よごすよ（pollutes）"},
+          {en:"The paper burned.", ja:"かみが もえたよ（burned）"}
+        ]
+      },
+      {
+        title: "📦 ものの ことば",
+        words: [
+          {w:"objects", m:"もの 📦（みえて さわれる もの）"},
+          {w:"shape", m:"かたち 🔺（まるや しかくの こと）"}
+        ],
+        examples: [
+          {en:"Look at the objects. What shape are they?", ja:"ものを みてね。どんな かたちかな？（objects・shape）"}
+        ]
+      }
+    ]
+  },
+  {
     id: "2026-11-06",
     name: "11/6（きん）の テスト",
     lower: true,
     setSize: 15,
-    stampDays: 4,  /* れんしゅうする ひの かず（スタンプの かず）。ぜんぶ たまると キラキラが でる */
+    stampDays: 4,  /* れんしゅうする ひの かず（スタンプの かず）。そろうと ガチャけん 3まい */
     /* もんだいの じゅんばん（スプレッドシートの ひょうと おなじ）。なければ groups の じゅんばん */
     order: ["rainy", "windy", "cloudy", "garden", "smile", "gift", "share", "pretty",
             "something", "behind", "moving", "different", "separate", "unripe", "chutney"],
