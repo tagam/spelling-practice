@@ -822,7 +822,7 @@
     g.textContent = "🎁 ガチャを まわす（あと " + tickets.length + "かい）";
     g.classList.toggle("hidden", !tickets.length || !canDraw());
     $("btn-zukan").classList.toggle("hidden", !PACKS.length);
-    $("btn-zukan").textContent = "🎀\nずかん " + (allDone() ? "🎉" : ownedCount() + "/" + CARDS.length);
+    $("btn-zukan").textContent = "🎀\nずかん"; /* かずは ずかんの なかで みる（ボタンに だすと よみにくい） */
   }
   /* ---- スタンプカードと きょうの れんしゅう ---- */
   function refreshStamps(dailyMode){
