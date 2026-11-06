@@ -822,7 +822,8 @@
     g.textContent = "🎁 ガチャを まわす（あと " + tickets.length + "かい）";
     g.classList.toggle("hidden", !tickets.length || !canDraw());
     $("btn-zukan").classList.toggle("hidden", !PACKS.length);
-    $("btn-zukan").textContent = "🎀\nずかん " + (allDone() ? "🎉" : ownedCount() + "/" + CARDS.length);
+    /* どの パートの かずか わかるように「パート2 0/8」と だす */
+    $("btn-zukan").textContent = "🎀 ずかん\n" + (allDone() ? "ぜんぶ 🎉" : "パート" + (PACK_NO + 1) + " " + ownedCount() + "/" + CARDS.length);
   }
   /* ---- スタンプカードと きょうの れんしゅう ---- */
   function refreshStamps(dailyMode){
