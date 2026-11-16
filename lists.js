@@ -1,11 +1,71 @@
 /* たんごリスト。まいしゅう あたらしい リストを いちばん うえに たす。
    アプリは いちばん うえの リストを つかう（URL に ?list=ID を つけると ほかの リスト）。
-   lower: true なら こもじで れんしゅう。setSize: 1かいの もんだいの かず。
+   lower: true なら こもじで れんしゅう。keepCase: true なら かいた とおりの おおもじ・こもじで れんしゅうし、
+   おおもじ・こもじが ちがうと まちがいに する（つきの なまえ など）。setSize: 1かいの もんだいの かず。
    words の かわりに groups（title・words・hint・examples）を かくと、カテゴリの じゅんばんで だして コツも でる。
+   hint は 1つ でも ["…", "…"] の ように いくつか でも よい。
    order（たんごの ならび）を かくと、もんだいは その じゅんばんで でる。
    stampDays を かくと「きょうの れんしゅう」と スタンプカードに なる（そろうと ガチャけん 3まい）。
    ガチャの カードは cards.js（しゅうを またいで あつめる カードダス） */
 var SPELL_LISTS = [
+  {
+    id: "2026-11-20",
+    name: "11/20（きん）の テスト",
+    keepCase: true,
+    setSize: 15,
+    stampDays: 4,  /* れんしゅうする ひの かず（スタンプの かず）。そろうと ガチャけん 3まい */
+    /* もんだいの じゅんばん（スプレッドシートの ひょうと おなじ）。なければ groups の じゅんばん */
+    order: ["January", "February", "March", "April", "May", "June", "July", "August",
+            "September", "October", "November", "December", "rainbow", "breeze", "dust"],
+    groups: [
+      {
+        title: "📅 つきの なまえ",
+        words: [
+          {w:"January", m:"いちがつ 🎍（1ねんの はじめの つき）"},
+          {w:"February", m:"にがつ ☃️（さむい ふゆの つき）"},
+          {w:"March", m:"さんがつ 🎎（ひなまつりの つき）"},
+          {w:"April", m:"しがつ 🌸（さくらが さく つき）"},
+          {w:"May", m:"ごがつ 🎏（こいのぼりの つき）"},
+          {w:"June", m:"ろくがつ ☔（つゆの つき）"},
+          {w:"July", m:"しちがつ 🎋（たなばたの つき）"},
+          {w:"August", m:"はちがつ 🍉（なつやすみの つき）"},
+          {w:"September", m:"くがつ 🌕（おつきみの つき）"},
+          {w:"October", m:"じゅうがつ 🎃（ハロウィンの つき）"},
+          {w:"November", m:"じゅういちがつ 🍁（もみじの つき）"},
+          {w:"December", m:"じゅうにがつ 🎄（1ねんの おわりの つき）"}
+        ],
+        hint: [
+          "つきの なまえは さいしょの もじが いつも おおもじ",
+          "September・October・November・December は みんな おしりが ber",
+          "June と July は どっちも Ju で はじまる"
+        ],
+        examples: [
+          {en:"January is the first month.", ja:"1がつは 1ねんの さいしょの つきだよ（January）"},
+          {en:"It is cold in February.", ja:"2がつは さむいよ（February）"},
+          {en:"Flowers bloom in March and April.", ja:"3がつと 4がつは はなが さくよ（March・April）"},
+          {en:"May is a nice month.", ja:"5がつは いい つきだね（May）"},
+          {en:"It is rainy in June.", ja:"6がつは あめが おおいよ（June）"},
+          {en:"We swim in July and August.", ja:"7がつと 8がつは およぐよ（July・August）"},
+          {en:"The moon is pretty in September.", ja:"9がつは おつきさまが きれいだよ（September）"},
+          {en:"We see red leaves in October and November.", ja:"10がつと 11がつは あかい はっぱが みられるよ（October・November）"},
+          {en:"Christmas is in December.", ja:"クリスマスは 12がつだよ（December）"}
+        ]
+      },
+      {
+        title: "🌈 しぜんの ことば",
+        words: [
+          {w:"rainbow", m:"にじ 🌈（あめの あとに でる なないろ）"},
+          {w:"breeze", m:"そよかぜ 🍃（やさしく ふく かぜ）"},
+          {w:"dust", m:"ほこり 🌫️（ちいさな ごみの こな）"}
+        ],
+        hint: "rainbow は rain（あめ）＋ bow（ゆみ）。あめの あとの ゆみの かたち",
+        examples: [
+          {en:"I see a rainbow after the rain.", ja:"あめの あとに にじが みえるよ（rainbow）"},
+          {en:"A gentle breeze blows the dust away.", ja:"そよかぜが ほこりを ふきとばすよ（breeze・dust）"}
+        ]
+      }
+    ]
+  },
   {
     id: "2026-11-13",
     name: "11/13（きん）の テスト",
