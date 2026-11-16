@@ -570,6 +570,8 @@
   var startListId = LISTS[0].id;
   var qm = /[?&]list=([^&#]+)/.exec(location.search);
   if (qm && listById(decodeURIComponent(qm[1]))) startListId = decodeURIComponent(qm[1]);
+  /* hint は 1つ（もじ）でも いくつか（ならび）でも よい */
+  function hintsOf(g){ return !g.hint ? [] : Array.isArray(g.hint) ? g.hint : [g.hint]; }
   function groupOf(w){
     var k = norm(w), gs = list.groups || [];
     for (var i = 0; i < gs.length; i++) {
@@ -577,7 +579,9 @@
     }
     return null;
   }
-  function shown(w){ return list.lower ? norm(w).toLowerCase() : norm(w); }
+  function spaced(s){ return String(s).replace(/\s+/g, " ").trim(); }
+  /* keepCase: かいた とおりの おおもじ・こもじ（つきの なまえ など）、lower: ぜんぶ こもじ、どちらも なければ ぜんぶ おおもじ */
+  function shown(w){ return list.keepCase ? spaced(w) : list.lower ? norm(w).toLowerCase() : norm(w); }
 
   var shuffleOn = false, keyboardOn = false, savedVoiceURI = "", voicePicked = false;
   try {
@@ -657,10 +661,10 @@
       words = list.order.map(function(w){ return byKey[norm(w)]; }).filter(Boolean);
     }
     SET_SIZE = list.setSize || 10;
-    document.getElementById("sub-text").textContent = list.lower ? "きいて、こもじで かいてみよう" : "きいて、おおもじで かいてみよう";
+    document.getElementById("sub-text").textContent = list.keepCase ? "きいて、おおもじと こもじに きをつけて かいてみよう" : list.lower ? "きいて、こもじで かいてみよう" : "きいて、おおもじで かいてみよう";
     var inp = document.getElementById("quiz-input");
-    inp.classList.toggle("lower", !!list.lower);
-    inp.setAttribute("autocapitalize", list.lower ? "none" : "characters");
+    inp.classList.toggle("lower", !!(list.lower || list.keepCase));
+    inp.setAttribute("autocapitalize", (list.lower || list.keepCase) ? "none" : "characters");
   }
   useList(startListId);
   function saveStats(){ try { localStorage.setItem("spell_stats", JSON.stringify(stats)); } catch (e) {} }
@@ -1011,10 +1015,11 @@
   function check(){
     var cur = queue[pos];
     if (!keyboardOn && !cardsFull()) return;
-    var ans = norm(keyboardOn ? $("quiz-input").value : cardAnswer());
+    var raw = spaced(keyboardOn ? $("quiz-input").value : cardAnswer());
+    var ans = norm(raw);
     if (!ans) { speakTimes(cur.w, 1); return; }
-    var correct = norm(cur.w);
-    var ok = ans === correct;
+    /* keepCase の リストは おおもじ・こもじも あって いないと まちがい */
+    var ok = list.keepCase ? raw === spaced(cur.w) : ans === norm(cur.w);
     var r = recOf(cur.w);
     if (ok) { r.ok++; r.st++; } else { r.ng++; r.st = 0; misses.push(cur); }
     saveStats();
@@ -1024,19 +1029,21 @@
     $("quiz-fb").classList.remove("hidden");
     $("fb-box").className = "feedback " + (ok ? "ok" : "ng");
     $("fb-mark").textContent = ok ? "⭕🎉" : "❌";
-    $("fb-label").textContent = ok ? "せいかい！" : "おしい！ こたえは…";
+    var caseOnly = !ok && ans === norm(cur.w); /* もじは あって いて、おおもじ・こもじ だけ ちがう */
+    $("fb-label").textContent = ok ? "せいかい！" : caseOnly ? "おしい！ おおもじと こもじに きをつけてね" : "おしい！ こたえは…";
     $("fb-word").textContent = shown(cur.w);
     $("fb-mean").textContent = cur.m || "";
-    $("fb-yours").textContent = ok ? "" : "きみの こたえ： " + (list.lower ? ans.toLowerCase() : ans);
+    $("fb-yours").textContent = ok ? "" : "きみの こたえ： " + (list.keepCase ? raw : list.lower ? ans.toLowerCase() : ans);
     var g = groupOf(cur.w);
     var hb = $("fb-hint");
     hb.innerHTML = "";
     /* その たんごが でてくる コツ → その たんごを つかった れいぶん → カテゴリの コツ の じゅんに えらぶ */
     var tip = g && (function(){
       var k = norm(cur.w), exs = g.examples || [];
-      if (g.hint && norm(g.hint).indexOf(k) >= 0) return g.hint;
+      var hs = hintsOf(g);
+      for (var h = 0; h < hs.length; h++) { if (norm(hs[h]).indexOf(k) >= 0) return hs[h]; }
       for (var i = 0; i < exs.length; i++) { if (norm(exs[i].en).indexOf(k) >= 0) return exs[i].en + "\n→ " + exs[i].ja; }
-      return g.hint || (exs.length ? exs[0].en + "\n→ " + exs[0].ja : "");
+      return hs[0] || (exs.length ? exs[0].en + "\n→ " + exs[0].ja : "");
     })();
     if (tip) {
       var hl = document.createElement("b"); hl.textContent = "💡 " + g.title;
@@ -1129,7 +1136,7 @@
         var li = document.createElement("li"); li.textContent = shown(x.w) + " = " + x.m; ul.appendChild(li);
       });
       d.appendChild(ul);
-      if (g.hint) { var hn = document.createElement("p"); hn.className = "tip-hint"; hn.textContent = "💡 " + g.hint; d.appendChild(hn); }
+      hintsOf(g).forEach(function(t){ var hn = document.createElement("p"); hn.className = "tip-hint"; hn.textContent = "💡 " + t; d.appendChild(hn); });
       (g.examples || []).forEach(function(ex){
         var p = document.createElement("p"); p.className = "tip-ex"; p.textContent = ex.en;
         var ja = document.createElement("span"); ja.textContent = "→ " + ex.ja; p.appendChild(ja);
