@@ -572,12 +572,12 @@
   if (qm && listById(decodeURIComponent(qm[1]))) startListId = decodeURIComponent(qm[1]);
   /* hint は 1つ（もじ）でも いくつか（ならび）でも よい */
   function hintsOf(g){ return !g.hint ? [] : Array.isArray(g.hint) ? g.hint : [g.hint]; }
-  function groupOf(w){
-    var k = norm(w), gs = list.groups || [];
-    for (var i = 0; i < gs.length; i++) {
-      for (var j = 0; j < gs[i].words.length; j++) { if (norm(gs[i].words[j].w) === k) return gs[i]; }
-    }
-    return null;
+  /* おなじ たんごが いくつかの カテゴリに はいる ことも ある（bright など） */
+  function groupsOf(w){
+    var k = norm(w);
+    return (list.groups || []).filter(function(g){
+      return g.words.some(function(x){ return norm(x.w) === k; });
+    });
   }
   function spaced(s){ return String(s).replace(/\s+/g, " ").trim(); }
   /* keepCase: かいた とおりの おおもじ・こもじ（つきの なまえ など）、lower: ぜんぶ こもじ、どちらも なければ ぜんぶ おおもじ */
@@ -655,6 +655,8 @@
   function useList(id){
     list = listById(id) || LISTS[0];
     words = list.groups ? [].concat.apply([], list.groups.map(function(g){ return g.words; })) : list.words.slice();
+    var seen = {};
+    words = words.filter(function(x){ var k = norm(x.w); if (seen[k]) return false; seen[k] = true; return true; });
     if (list.order) {
       var byKey = {};
       words.forEach(function(x){ byKey[norm(x.w)] = x; });
@@ -1034,16 +1036,25 @@
     $("fb-word").textContent = shown(cur.w);
     $("fb-mean").textContent = cur.m || "";
     $("fb-yours").textContent = ok ? "" : "きみの こたえ： " + (list.keepCase ? raw : list.lower ? ans.toLowerCase() : ans);
-    var g = groupOf(cur.w);
     var hb = $("fb-hint");
     hb.innerHTML = "";
-    /* その たんごが でてくる コツ → その たんごを つかった れいぶん → カテゴリの コツ の じゅんに えらぶ */
-    var tip = g && (function(){
-      var k = norm(cur.w), exs = g.examples || [];
-      var hs = hintsOf(g);
-      for (var h = 0; h < hs.length; h++) { if (norm(hs[h]).indexOf(k) >= 0) return hs[h]; }
-      for (var i = 0; i < exs.length; i++) { if (norm(exs[i].en).indexOf(k) >= 0) return exs[i].en + "\n→ " + exs[i].ja; }
-      return hs[0] || (exs.length ? exs[0].en + "\n→ " + exs[0].ja : "");
+    /* その たんごが でてくる コツ → その たんごを つかった れいぶん → カテゴリの コツ の じゅんに えらぶ（はいって いる カテゴリ ぜんぶから） */
+    var g = null, tip = "";
+    (function(){
+      var k = norm(cur.w), gs = groupsOf(cur.w), i, j;
+      for (i = 0; i < gs.length; i++) {
+        var hs = hintsOf(gs[i]);
+        for (j = 0; j < hs.length; j++) { if (norm(hs[j]).indexOf(k) >= 0) { g = gs[i]; tip = hs[j]; return; } }
+      }
+      for (i = 0; i < gs.length; i++) {
+        var exs = gs[i].examples || [];
+        for (j = 0; j < exs.length; j++) { if (norm(exs[j].en).indexOf(k) >= 0) { g = gs[i]; tip = exs[j].en + "\n→ " + exs[j].ja; return; } }
+      }
+      if (gs.length) {
+        g = gs[0];
+        var e0 = (g.examples || [])[0];
+        tip = hintsOf(g)[0] || (e0 ? e0.en + "\n→ " + e0.ja : "");
+      }
     })();
     if (tip) {
       var hl = document.createElement("b"); hl.textContent = "💡 " + g.title;

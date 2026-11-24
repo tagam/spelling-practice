@@ -9,6 +9,78 @@
    ガチャの カードは cards.js（しゅうを またいで あつめる カードダス） */
 var SPELL_LISTS = [
   {
+    id: "2026-11-27",
+    name: "11/27（きん）の テスト",
+    lower: true,
+    setSize: 15,
+    stampDays: 3,  /* かようびから はじめるので か〜もくの 3にち。そろうと ガチャけん 3まい */
+    /* もんだいの じゅんばん（スプレッドシートの ひょうと おなじ）。なければ groups の じゅんばん */
+    order: ["time", "clock", "hour", "minutes", "bright", "dark", "noisy", "quiet",
+            "meat", "flight", "height", "fourth", "wonderful", "remake", "means"],
+    groups: [
+      {
+        title: "⏰ じかんの ことば",
+        words: [
+          {w:"time", m:"じかん ⏰（いま なんじ？の じかん）"},
+          {w:"clock", m:"とけい 🕰️（じかんが わかる もの）"},
+          {w:"hour", m:"1じかん ⌛（60ぷんの こと）"},
+          {w:"minutes", m:"ふん ⏱️（60びょうで 1ぷん）"}
+        ],
+        examples: [
+          {en:"What time is it? Look at the clock.", ja:"いま なんじ？ とけいを みてね（time・clock）"},
+          {en:"One hour is sixty minutes.", ja:"1じかんは 60ぷんだよ（hour・minutes）"}
+        ]
+      },
+      {
+        title: "🔁 はんたいの ことば",
+        words: [
+          {w:"bright", m:"あかるい ☀️（ひかって あかるい こと）"},
+          {w:"dark", m:"くらい 🌑（ひかりが なくて くらい こと）"},
+          {w:"noisy", m:"うるさい 📢（おとが おおきい こと）"},
+          {w:"quiet", m:"しずか 🤫（おとが しない こと）"}
+        ],
+        examples: [
+          {en:"The sun is bright. The night is dark.", ja:"おひさまは あかるい。よるは くらいよ（bright・dark）"},
+          {en:"The class is noisy. Please be quiet.", ja:"クラスが うるさいね。しずかに してね（noisy・quiet）"}
+        ]
+      },
+      {
+        title: "✈️ ight の なかま",
+        words: [
+          {w:"flight", m:"ひこうきの たび ✈️（そらを とんで いく こと）"},
+          {w:"height", m:"たかさ 📏（せの たかさ）"},
+          {w:"bright", m:"あかるい ☀️（ひかって あかるい こと）"}
+        ],
+        hint: "flight も height も bright も おしりは ight。gh は よまない",
+        examples: [
+          {en:"We went on a flight.", ja:"ひこうきに のって でかけたよ（flight）"},
+          {en:"What is your height?", ja:"せの たかさは どのくらい？（height）"}
+        ]
+      },
+      {
+        title: "⭐ そのほかの ことば",
+        words: [
+          {w:"meat", m:"おにく 🍖（たべる にく）"},
+          {w:"fourth", m:"4ばんめ 4️⃣（1、2、3の つぎ）"},
+          {w:"wonderful", m:"すばらしい 🌟（とても すてきな こと）"},
+          {w:"remake", m:"つくりなおす 🔁（もう いちど つくる こと）"},
+          {w:"means", m:"いみする 💬（〜という いみに なる）"}
+        ],
+        hint: [
+          "re が つくと『もう いちど』。make → remake",
+          "wonder に ful で wonderful"
+        ],
+        examples: [
+          {en:"I like meat.", ja:"おにくが すきだよ（meat）"},
+          {en:"This is my fourth cookie!", ja:"これで 4まいめの クッキーだよ！（fourth）"},
+          {en:"What a wonderful day!", ja:"すばらしい 1にちだね！（wonderful）"},
+          {en:"Let's remake the sandcastle.", ja:"すなの おしろを つくりなおそう（remake）"},
+          {en:"Big means \"large\".", ja:"big は「おおきい」という いみだよ（means）"}
+        ]
+      }
+    ]
+  },
+  {
     id: "2026-11-20",
     name: "11/20（きん）の テスト",
     keepCase: true,
