@@ -1104,7 +1104,8 @@
     });
     if (currentSetKey && !(setBest[currentSetKey] >= okCount)) setBest[currentSetKey] = okCount;
     var gachaOn = canDraw();
-    if (gachaOn) tickets.push(okCount / queue.length); /* さいごまで やったら ガチャけん 1まい */
+    /* さいごまで やったら ガチャけん 1まい（ぜんぶ あつめた あとも ためておき、あたらしい パートが でたら つかえる） */
+    if (PACKS.length) tickets.push(okCount / queue.length);
     /* きょうの れんしゅう：15もん → まちがえた もんだいだけ（さいだい 3かい）→ スタンプ */
     /* つぎに やる ことは ホームの ボタンから。けっかでは ガチャと ホームに もどる だけ */
     var stampMsg = $("result-stamp");
@@ -1116,7 +1117,7 @@
         var wasComplete = stampsComplete();
         rec.done = true;
         stampMsg.textContent = "🌸 きょうの スタンプ ゲット！（" + stampCount() + " / " + list.stampDays + "）";
-        if (!wasComplete && stampsComplete() && canDraw()) {
+        if (!wasComplete && stampsComplete() && PACKS.length) {
           for (var b = 0; b < STAMP_BONUS; b++) tickets.push(1); /* スタンプ コンプリートの ごほうび */
           stampMsg.textContent = "🎉 スタンプ コンプリート！ ガチャけんを " + STAMP_BONUS + "まい もらったよ";
         }
