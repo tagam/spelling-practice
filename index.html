@@ -643,9 +643,9 @@
       var row = document.createElement("label"); row.className = "reward-row";
       var cb = document.createElement("input"); cb.type = "checkbox"; cb.id = "reward-" + pk.id; cb.checked = !!rewards[pk.id];
       var name = document.createElement("span"); name.textContent = "パート" + (i + 1) + "「" + pk.name + "」";
-      var when = document.createElement("small"); when.textContent = rewards[pk.id] ? rewards[pk.id] : "まだ";
+      var when = document.createElement("small"); when.textContent = rewards[pk.id] ? "わたした" : "まだ";
       cb.addEventListener("change", function(){
-        if (cb.checked) { var d = new Date(); rewards[pk.id] = (d.getMonth() + 1) + "/" + d.getDate(); }
+        if (cb.checked) rewards[pk.id] = true;
         else delete rewards[pk.id];
         saveRewards();
         refreshRewards();
@@ -1293,7 +1293,7 @@
         var rw = document.createElement("span");
         var gotIt = rewards[PACKS[i].id];
         rw.className = "pack-reward" + (gotIt ? " got" : "");
-        rw.textContent = gotIt ? "✅ ごほうび もらった（" + gotIt + "）" : "🎁 ごほうび まだ（おうちの ひとに みせてね）";
+        rw.textContent = gotIt ? "✅ ごほうび もらった" : "🎁 ごほうび まだ（おうちの ひとに みせてね）";
         h.appendChild(rw);
       }
       box.appendChild(h);
