@@ -376,6 +376,13 @@
   @keyframes pop { from { transform: scale(.3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   @keyframes shimmer { to { background-position: 300% 300%; } }
   .pack-title { font-size: 1rem; text-align: center; margin: 14px 0 0; }
+  .pack-reward { display: block; font-size: .85rem; font-weight: 700; color: var(--pink-dark); }
+  .pack-reward.got { color: var(--ok); }
+  .reward-box { margin-top: 16px; border-top: 1px dashed var(--border); padding-top: 10px; }
+  .reward-title { text-align: center; font-weight: 700; margin: 0; }
+  .reward-row { display: flex; align-items: center; gap: 10px; padding: 6px 4px; font-size: .95rem; }
+  .reward-row input { width: 22px; height: 22px; accent-color: var(--accent); flex: none; }
+  .reward-row small { color: var(--muted); margin-left: auto; white-space: nowrap; }
   .zukan { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 16px 8px; margin: 14px 0 6px; }
   .zcell { position: relative; min-width: 0; border: 3px solid var(--border); border-radius: 14px; padding: 6px 2px; text-align: center; }
   .zcell .em { font-size: 2.2rem; line-height: 1.25; }
@@ -423,6 +430,11 @@
         <select id="sel-voice"><option value="">じどうで えらぶ</option></select>
       </label>
       <p class="note">🔊ボタンで 3かい よみあげます（ほんばんと おなじ）</p>
+      <div class="reward-box">
+        <p class="reward-title">🎁 ごほうびチェック</p>
+        <p class="note" style="margin-top:0;">パートを ぜんぶ あつめたら ごほうび。わたしたら チェックしてください</p>
+        <div id="reward-list"></div>
+      </div>
     </details>
   </div>
 
@@ -614,6 +626,35 @@
       if (!tk3 && Array.isArray(tk2["2026-11-06"])) tickets = tk2["2026-11-06"];
     }
   } catch (e) {}
+  /* ---- ごほうびチェック（パートごと。おやが チェックする） ---- */
+  var rewards = {};
+  try {
+    var rw0 = JSON.parse(localStorage.getItem("spell_rewards") || "{}");
+    if (rw0 && typeof rw0 === "object") rewards = rw0;
+  } catch (e) {}
+  function saveRewards(){ try { localStorage.setItem("spell_rewards", JSON.stringify(rewards)); } catch (e) {} }
+  function refreshRewards(){
+    var box = document.getElementById("reward-list");
+    box.innerHTML = "";
+    var any = false;
+    PACKS.forEach(function(pk, i){
+      if (!packDone(pk)) return;
+      any = true;
+      var row = document.createElement("label"); row.className = "reward-row";
+      var cb = document.createElement("input"); cb.type = "checkbox"; cb.id = "reward-" + pk.id; cb.checked = !!rewards[pk.id];
+      var name = document.createElement("span"); name.textContent = "パート" + (i + 1) + "「" + pk.name + "」";
+      var when = document.createElement("small"); when.textContent = rewards[pk.id] ? rewards[pk.id] : "まだ";
+      cb.addEventListener("change", function(){
+        if (cb.checked) { var d = new Date(); rewards[pk.id] = (d.getMonth() + 1) + "/" + d.getDate(); }
+        else delete rewards[pk.id];
+        saveRewards();
+        refreshRewards();
+      });
+      row.appendChild(cb); row.appendChild(name); row.appendChild(when);
+      box.appendChild(row);
+    });
+    if (!any) { var p = document.createElement("p"); p.className = "note"; p.textContent = "まだ そろった パートは ありません"; box.appendChild(p); }
+  }
   function saveGacha(){
     try {
       localStorage.setItem("spell_set_best", JSON.stringify(setBest));
@@ -785,6 +826,7 @@
     return ["🟢 おぼえた " + c["🟢"], "🔴 まちがえた " + c["🔴"], "⚪️ まだ " + c["⚪️"]];
   }
   function refreshHome(){
+    refreshRewards();
     $("list-name").textContent = "📚 " + list.name;
     var dailyMode = !!list.stampDays;
     $("btn-tips").classList.toggle("hidden", !list.groups);
@@ -1189,7 +1231,7 @@
     var done = allDone();
     var left = $("gacha-left");
     if (finishedPack) {
-      left.textContent = "🎉 パート" + finishedPack + " コンプリート！" + (done ? " つぎの パートを まってね" : " ガチャけん 1まい プレゼント！ つぎは パート" + (PACK_NO + 1) + "！");
+      left.textContent = "🎉 パート" + finishedPack + " コンプリート！ おうちの ひとに みせてね" + (done ? "。つぎの パートを まってね" : "。ガチャけん 1まい プレゼント！");
     } else if (done) {
       left.textContent = "🎉 ぜんぶの パートを コンプリート！ つぎの パートを まってね";
     } else {
@@ -1247,6 +1289,13 @@
       var h = document.createElement("h3"); h.className = "pack-title";
       var got = PACKS[i].cards.filter(function(c){ return owned[c.e]; }).length;
       h.textContent = "パート" + (i + 1) + "「" + PACKS[i].name + "」 " + got + " / " + PACKS[i].cards.length + (packDone(PACKS[i]) ? " 🎉" : "");
+      if (packDone(PACKS[i])) {
+        var rw = document.createElement("span");
+        var gotIt = rewards[PACKS[i].id];
+        rw.className = "pack-reward" + (gotIt ? " got" : "");
+        rw.textContent = gotIt ? "✅ ごほうび もらった（" + gotIt + "）" : "🎁 ごほうび まだ（おうちの ひとに みせてね）";
+        h.appendChild(rw);
+      }
       box.appendChild(h);
       var grid = document.createElement("div"); grid.className = "zukan";
       PACKS[i].cards.forEach(function(c){ grid.appendChild(zukanCell(c)); });
