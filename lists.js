@@ -9,6 +9,71 @@
    ガチャの カードは cards.js（しゅうを またいで あつめる カードダス） */
 var SPELL_LISTS = [
   {
+    id: "2026-12-04",
+    name: "12/4（きん）の テスト",
+    lower: true,
+    setSize: 15,
+    stampDays: 4,  /* れんしゅうする ひの かず（スタンプの かず）。そろうと ガチャけん 3まい */
+    /* もんだいの じゅんばん（スプレッドシートの ひょうと おなじ）。なければ groups の じゅんばん */
+    order: ["playground", "slide", "swing", "ladder", "monkey bar", "first", "safety", "follow",
+            "heavy", "thump", "strike", "piece", "period", "mounted", "physical"],
+    groups: [
+      {
+        title: "🛝 こうえんの あそびどうぐ",
+        words: [
+          {w:"playground", m:"こうえん 🏞️（みんなで あそぶ ところ）"},
+          {w:"slide", m:"すべりだい 🛝（すーっと すべる あそびどうぐ）"},
+          {w:"swing", m:"ぶらんこ 🎠（ゆらゆら ゆれる あそびどうぐ）"},
+          {w:"ladder", m:"はしご 🪜（のぼったり おりたり する どうぐ）"},
+          {w:"monkey bar", m:"うんてい 🐒（ぶらさがって すすむ あそびどうぐ）"}
+        ],
+        hint: "playground は play（あそぶ）＋ ground（じめん）",
+        examples: [
+          {en:"I play on the slide and the swing at the playground.", ja:"こうえんで すべりだいと ぶらんこで あそぶよ（slide・swing・playground）"},
+          {en:"Climb the ladder to the monkey bar.", ja:"はしごを のぼって うんていに いこう（ladder・monkey bar）"}
+        ]
+      },
+      {
+        title: "🦺 あんぜんの ことば",
+        words: [
+          {w:"safety", m:"あんぜん 🦺（けがを しない こと）"},
+          {w:"first", m:"いちばん さいしょ 🥇（1ばんめ）"},
+          {w:"follow", m:"まもる・ついていく 👣（きまりや ひとに したがう こと）"}
+        ],
+        examples: [
+          {en:"Safety first! Follow the rules.", ja:"あんぜんが いちばん！ きまりを まもろうね（safety・first・follow）"}
+        ]
+      },
+      {
+        title: "💥 おとと ちからの ことば",
+        words: [
+          {w:"heavy", m:"おもい 🏋️（もつのが たいへんな こと）"},
+          {w:"thump", m:"ドスン 💥（おもい ものが おちる おと）"},
+          {w:"strike", m:"たたく ⚡（つよく うつ こと）"}
+        ],
+        examples: [
+          {en:"The heavy box fell with a thump.", ja:"おもい はこが ドスンと おちたよ（heavy・thump）"},
+          {en:"Strike the drum!", ja:"たいこを たたいて！（strike）"}
+        ]
+      },
+      {
+        title: "⭐ そのほかの ことば",
+        words: [
+          {w:"piece", m:"ひとつ・かけら 🧩（ちいさく わけた ひとつ）"},
+          {w:"period", m:"じかんめ 🕐（じゅぎょうの くぎり）"},
+          {w:"mounted", m:"とりつけた 🔩（しっかり つけた こと）"},
+          {w:"physical", m:"からだの 🤸（からだを うごかす こと）"}
+        ],
+        hint: "piece の なかには pie（パイ）が いる。a piece of pie！",
+        examples: [
+          {en:"Can I have a piece of cake?", ja:"ケーキを ひとつ もらえる？（piece）"},
+          {en:"We do physical exercise in the second period.", ja:"2じかんめに からだを うごかすよ（physical・period）"},
+          {en:"The swing is mounted on a strong pole.", ja:"ぶらんこは じょうぶな ぼうに とりつけて あるよ（mounted）"}
+        ]
+      }
+    ]
+  },
+  {
     id: "2026-11-27",
     name: "11/27（きん）の テスト",
     lower: true,
